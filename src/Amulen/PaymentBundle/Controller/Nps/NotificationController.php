@@ -8,11 +8,12 @@ use Amulen\PaymentBundle\Model\Gateway\PaymentButtonGateway;
 use Amulen\PaymentBundle\Model\Payment\PaymentInfo;
 use Amulen\PaymentBundle\Model\Payment\Status;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Request;
 
-class DefaultController extends Controller
+class NotificationController extends Controller
 {
     /**
      * @Route("/amulen_payment/notification/nps", name="amulen_payment_notification_nps")

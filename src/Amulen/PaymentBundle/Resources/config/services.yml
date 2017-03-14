@@ -5,3 +5,9 @@ services:
         arguments:
           - "@router"
           - "@amulen.dashboard.service.setting"
+
+    amulen_payment.collect_setting_options_subscriber:
+        class: Amulen\PaymentBundle\Event\CollectSettingOptionsSubscriber
+        arguments: ['@translator']
+        tags:
+            - { name: kernel.event_subscriber }

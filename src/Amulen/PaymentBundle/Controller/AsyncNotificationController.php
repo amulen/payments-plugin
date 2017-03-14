@@ -4,9 +4,10 @@ namespace Amulen\PaymentBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 
-class AyncNotificationController extends Controller
+class AsyncNotificationController extends Controller
 {
     /**
      * @Route("/amulen_payment/async_notification/{gatewayId}", name="amulen_nps_payment_async_notification")
