@@ -1,2 +1,2 @@
-# payments-plugin
+# AmulenPayments
 Amulen payment with several gateways

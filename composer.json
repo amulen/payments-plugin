@@ -1,0 +1,19 @@
+{
+  "name": "amulen/payments-plugin",
+  "description": "One shot, several birds.",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Juan Manuel Aguero",
+      "email": "juanma.aguero@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-0": {
+      "": "src/"
+    }
+  },
+  "require": {
+    "nps/php-sdk": "^1.1"
+  }
+}
