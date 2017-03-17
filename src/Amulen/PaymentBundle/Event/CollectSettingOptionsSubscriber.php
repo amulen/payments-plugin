@@ -41,6 +41,11 @@ class CollectSettingOptionsSubscriber implements EventSubscriberInterface
         ]);
 
         $event->addSettingOption([
+            "key" => \Amulen\PaymentBundle\Model\Gateway\Nps\Setting::KEY_WSDL_URL,
+            "label" => $this->translator->trans('Wsdl Url'),
+        ]);
+
+        $event->addSettingOption([
             "key" => \Amulen\PaymentBundle\Model\Gateway\Nps\Setting::KEY_MERCHANT_ID,
             "label" => $this->translator->trans('Merchant ID'),
         ]);

@@ -1,7 +1,7 @@
 services:
 
     amulen_payment.gateway.button.nps:
-        class: Amulen\PaymentBundle\Service\PaymentService
+        class: Amulen\PaymentBundle\Service\Nps\NpsPaymentButtonGateway
         arguments:
           - "@router"
           - "@amulen.dashboard.service.setting"

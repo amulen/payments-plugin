@@ -54,6 +54,7 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
         $secretKey = $this->settings->get(Setting::KEY_SECRET_KEY);
         $merchantId = $this->settings->get(Setting::KEY_MERCHANT_ID);
         $environment = $this->settings->get(Setting::KEY_ENVIRONMENT) ?? Setting::ENVIRONMENT_DEV;
+        $wsdlUrl = $this->settings->get(Setting::KEY_WSDL_URL);
 
         Configuration::environment($environment);
         Configuration::secretKey($secretKey);
@@ -80,7 +81,7 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
             'psp_Country' => 'ARG',
             'psp_Product' => $paymentInfo->getMethodId(),
             'psp_CustomerMail' => $paymentInfo->getCustomerMail(),
-            'psp_ReturnURL' => $this->router->generate('amulen_nps_payment_receive', [], Router::ABSOLUTE_URL),
+            'psp_ReturnURL' => $this->router->generate('amulen_payment_notification_nps', [], Router::ABSOLUTE_URL),
             'psp_FrmBackButtonURL' => $this->router->generate('order', [], Router::ABSOLUTE_URL),
             'psp_FrmLanguage' => $paymentInfo->getLanguage() ?? 'es_AR',
         ];
