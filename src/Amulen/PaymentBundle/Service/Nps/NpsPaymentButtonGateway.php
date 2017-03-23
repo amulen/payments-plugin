@@ -2,16 +2,16 @@
 
 namespace Amulen\PaymentBundle\Service\Nps;
 
+
+use Amulen\NpsBundle\Model\Client\SoapClient;
+use Amulen\NpsBundle\Model\Exception\ApiException;
+use Amulen\NpsBundle\Service\PaymentService;
 use Amulen\PaymentBundle\Model\Exception\GatewayException;
 use Amulen\PaymentBundle\Model\Gateway\Nps\Setting;
 use Amulen\PaymentBundle\Model\Gateway\PaymentButtonGateway;
 use Amulen\PaymentBundle\Model\Gateway\Response;
 use Amulen\PaymentBundle\Model\Payment\Status;
-use Flowcode\DashboardBundle\Service\SettingService;
-use NpsSDK\ApiException;
-use NpsSDK\Configuration;
-use NpsSDK\Constants;
-use NpsSDK\Sdk;
+use Amulen\SettingsBundle\Model\SettingRepository;
 use Symfony\Component\Routing\Router;
 
 /**
@@ -21,7 +21,7 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
 {
 
     /**
-     * @var Sdk
+     * @var PaymentService
      */
     private $npsSdk;
 
@@ -31,7 +31,7 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
     private $router;
 
     /**
-     * @var SettingService
+     * @var SettingRepository
      */
     private $settings;
 
@@ -39,26 +39,10 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
      * PaymentService constructor.
      * @param Router $router
      */
-    public function __construct(Router $router, $settingService)
+    public function __construct(Router $router, SettingRepository $settingRepository)
     {
         $this->router = $router;
-        $this->settings = $settingService;
-    }
-
-
-    private function init()
-    {
-        //$secretKey = 'QxOXjk1EptHlJn4yBs0iJlwcPUXarXkHS6nBpmOcddNwQRsZJsHccEC1ghaXCIpf';
-        //$merchantId = 'moderna';
-
-        $secretKey = $this->settings->get(Setting::KEY_SECRET_KEY);
-        $merchantId = $this->settings->get(Setting::KEY_MERCHANT_ID);
-        $environment = $this->settings->get(Setting::KEY_ENVIRONMENT) ?? Setting::ENVIRONMENT_DEV;
-        $wsdlUrl = $this->settings->get(Setting::KEY_WSDL_URL);
-
-        Configuration::environment($environment);
-        Configuration::secretKey($secretKey);
-
+        $this->settings = $settingRepository;
     }
 
     /**
@@ -66,7 +50,6 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
      */
     public function getLinkUrl($paymentInfo)
     {
-        $this->init();
 
         $params = [
             'psp_Version' => '2.2',
@@ -101,7 +84,6 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
      */
     public function validatePayment($paymentInfo)
     {
-        $this->init();
 
         $response = new Response();
         $response->setMessage('Something goes wrong.');
@@ -132,12 +114,18 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
     }
 
     /**
-     * @return Sdk
+     * @return PaymentService
      */
     public function getNpsSdk()
     {
         if (!$this->npsSdk) {
-            $this->npsSdk = new Sdk();
+
+            $this->npsSdk = new PaymentService();
+            $client = new SoapClient($this->settings->get(Setting::KEY_WSDL_URL));
+            $client->setMerchantId($this->settings->get(Setting::KEY_MERCHANT_ID));
+            $client->setSecretKey($this->settings->get(Setting::KEY_SECRET_KEY));
+
+            $this->npsSdk->setClient($client);
         }
         return $this->npsSdk;
     }
