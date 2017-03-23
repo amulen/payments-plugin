@@ -2,6 +2,9 @@
 
 namespace Amulen\PaymentBundle\Service\Nps;
 
+
+use Amulen\NpsBundle\Model\Client\SoapClient;
+use Amulen\NpsBundle\Service\PaymentService;
 use Amulen\PaymentBundle\Model\Exception\GatewayException;
 use Amulen\PaymentBundle\Model\Gateway\Nps\Setting;
 use Amulen\PaymentBundle\Model\Gateway\PaymentButtonGateway;
@@ -137,7 +140,13 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
     public function getNpsSdk()
     {
         if (!$this->npsSdk) {
-            $this->npsSdk = new Sdk();
+
+            $this->npsSdk = new PaymentService();
+            $client = new SoapClient($this->settings->get(Setting::KEY_WSDL_URL));
+            $client->setMerchantId($this->settings->get(Setting::KEY_MERCHANT_ID));
+            $client->setSecretKey($this->settings->get(Setting::KEY_SECRET_KEY));
+
+            $this->npsSdk->setClient($client);
         }
         return $this->npsSdk;
     }
