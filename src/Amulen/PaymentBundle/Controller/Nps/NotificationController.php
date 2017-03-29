@@ -37,6 +37,7 @@ class NotificationController extends Controller
         }
 
         $processedPaymentEvent = new ProcessedPaymentEvent($npsResponse->getStatus());
+        $processedPaymentEvent->setOrderId($npsResponse->getOrderId());
 
         $dispatcher = $this->get('event_dispatcher');
         $dispatcher->dispatch(ProcessedPaymentEvent::NAME, $processedPaymentEvent);
