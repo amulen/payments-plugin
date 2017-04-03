@@ -72,7 +72,14 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
 
             $resp = $this->getNpsSdk()->payOnline3p($params);
 
-            return $resp->psp_FrontPSP_URL;
+            if ($resp->psp_ResponseCod == "1") {
+
+                return $resp->psp_FrontPSP_URL;
+
+            } else {
+
+                throw new GatewayException($resp->psp_ResponseExtended);
+            }
 
         } catch (ApiException $e) {
             throw new GatewayException($e->getMessage());
