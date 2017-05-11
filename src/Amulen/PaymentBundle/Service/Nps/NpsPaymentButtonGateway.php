@@ -5,6 +5,7 @@ namespace Amulen\PaymentBundle\Service\Nps;
 
 use Amulen\NpsBundle\Model\Client\SoapClient;
 use Amulen\NpsBundle\Model\Exception\ApiException;
+use Amulen\NpsBundle\Model\Soap\Operation;
 use Amulen\NpsBundle\Service\PaymentService;
 use Amulen\PaymentBundle\Model\Exception\GatewayException;
 use Amulen\PaymentBundle\Model\Gateway\Nps\Setting;
@@ -69,8 +70,14 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
             'psp_FrmLanguage' => $paymentInfo->getLanguage() ?? 'es_AR',
         ];
         try {
+            $options = [];
+            $wsdlRoute = $this->settings->get(Setting::KEY_WSDL_URL);
+            if ($wsdlRoute) {
+                $soapAction = str_replace("?wsdl", '/'.Operation::PAY_ONLINE_3P, $wsdlRoute);
+                $options['soapaction'] = $soapAction;
+            }
 
-            $resp = $this->getNpsSdk()->payOnline3p($params);
+            $resp = $this->getNpsSdk()->payOnline3p($params, $options);
 
             if ($resp->psp_ResponseCod == "1") {
 
