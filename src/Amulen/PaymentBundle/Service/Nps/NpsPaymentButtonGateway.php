@@ -4,6 +4,7 @@ namespace Amulen\PaymentBundle\Service\Nps;
 
 
 use Amulen\NpsBundle\Model\Client\SoapClient;
+use Amulen\NpsBundle\Model\Client\SoapClientFactory;
 use Amulen\NpsBundle\Model\Exception\ApiException;
 use Amulen\NpsBundle\Model\Soap\Operation;
 use Amulen\NpsBundle\Service\PaymentService;
@@ -37,13 +38,19 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
     private $settings;
 
     /**
+     * @var SoapClientFactory
+     */
+    private $soapClientFactory;
+
+    /**
      * PaymentService constructor.
      * @param Router $router
      */
-    public function __construct(Router $router, SettingRepository $settingRepository)
+    public function __construct(Router $router, SettingRepository $settingRepository, $soapClientFactory)
     {
         $this->router = $router;
         $this->settings = $settingRepository;
+        $this->soapClientFactory = $soapClientFactory;
     }
 
     /**
@@ -73,7 +80,7 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
             $options = [];
             $wsdlRoute = $this->settings->get(Setting::KEY_WSDL_URL);
             if ($wsdlRoute) {
-                $soapAction = str_replace("?wsdl", '/'.Operation::PAY_ONLINE_3P, $wsdlRoute);
+                $soapAction = str_replace("?wsdl", '/' . Operation::PAY_ONLINE_3P, $wsdlRoute);
                 $options['soapaction'] = $soapAction;
             }
 
@@ -135,9 +142,7 @@ class NpsPaymentButtonGateway implements PaymentButtonGateway
         if (!$this->npsSdk) {
 
             $this->npsSdk = new PaymentService();
-            $client = new SoapClient($this->settings->get(Setting::KEY_WSDL_URL));
-            $client->setMerchantId($this->settings->get(Setting::KEY_MERCHANT_ID));
-            $client->setSecretKey($this->settings->get(Setting::KEY_SECRET_KEY));
+            $client = $this->soapClientFactory->npsSoapClient();
 
             $this->npsSdk->setClient($client);
         }

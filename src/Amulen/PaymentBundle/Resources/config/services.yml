@@ -5,9 +5,16 @@ services:
         arguments:
           - "@router"
           - "@amulen.dashboard.service.setting"
+          - "@soap.client.factory"
 
     amulen_payment.collect_setting_options_subscriber:
         class: Amulen\PaymentBundle\Event\CollectSettingOptionsSubscriber
         arguments: ['@translator']
         tags:
             - { name: kernel.event_subscriber }
+
+    soap.client.factory:
+        class: Amulen\PaymentBundle\Service\Nps\SoapClientFactory
+        arguments:
+          - "@logger"
+          - "@amulen.dashboard.service.setting"
