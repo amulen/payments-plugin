@@ -34,6 +34,7 @@ class NotificationController extends Controller
 
         if ($npsResponse->getStatus() == Status::APPROVED) {
             $session->remove('productOrderId');
+            $session->remove('productOrderCount');
         }
 
         $processedPaymentEvent = new ProcessedPaymentEvent($npsResponse->getStatus());

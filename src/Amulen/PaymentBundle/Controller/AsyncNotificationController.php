@@ -36,6 +36,7 @@ class AsyncNotificationController extends Controller
             $productOrderService->changeStatusTo($productOrder, ProductOrderStatus::STATUS_PAYED);
 
             $session->remove('productOrderId');
+            $session->remove('productOrderCount');
 
             return $this->redirectToRoute('product_order_confirmed');
         }
