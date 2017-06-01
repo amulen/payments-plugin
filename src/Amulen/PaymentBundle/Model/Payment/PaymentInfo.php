@@ -2,6 +2,8 @@
 
 namespace Amulen\PaymentBundle\Model\Payment;
 
+use Doctrine\Common\Collections\ArrayCollection;
+
 /**
  * Payment Information.
  *
@@ -15,8 +17,15 @@ class PaymentInfo
     private $transactionId;
     private $currencyId;
     private $methodId;
+    private $paymentReference;
     private $customerMail;
     private $language;
+    private $paymentInfoItems;
+
+    public function __construct()
+    {
+        $this->paymentInfoItems = new ArrayCollection();
+    }
 
     /**
      * @return mixed
@@ -101,6 +110,22 @@ class PaymentInfo
     /**
      * @return mixed
      */
+    public function getPaymentReference()
+    {
+        return $this->paymentReference;
+    }
+
+    /**
+     * @param mixed $paymentReference
+     */
+    public function setPaymentReference($paymentReference)
+    {
+        $this->paymentReference = $paymentReference;
+    }
+
+    /**
+     * @return mixed
+     */
     public function getCustomerMail()
     {
         return $this->customerMail;
@@ -146,5 +171,27 @@ class PaymentInfo
         $this->transactionId = $transactionId;
     }
 
+    /**
+     * @return mixed
+     */
+    public function addPaymentInfoItem(PaymentInfoItem $paymentInfoItem)
+    {
+        $this->paymentInfoItems->add($paymentInfoItem);
+    }
 
+    /**
+     * @return mixed
+     */
+    public function removePaymentInfoItem(PaymentInfoItem $paymentInfoItem)
+    {
+        $this->paymentInfoItems->removeElement($paymentInfoItem);
+    }
+
+    /**
+     * @param mixed $paymentInfoItems
+     */
+    public function setRawMaterials($paymentInfoItems)
+    {
+        $this->paymentInfoItems = $paymentInfoItems;
+    }
 }

@@ -35,24 +35,41 @@ class CollectSettingOptionsSubscriber implements EventSubscriberInterface
 
     public function handler(CollectSettingOptionsEvent $event)
     {
+        /* NPS */
         $event->addSettingOption([
             "key" => \Amulen\PaymentBundle\Model\Gateway\Nps\Setting::KEY_ENVIRONMENT,
-            "label" => $this->translator->trans('Environment'),
+            "label" => $this->translator->trans('NPS - Environment'),
         ]);
 
         $event->addSettingOption([
             "key" => \Amulen\PaymentBundle\Model\Gateway\Nps\Setting::KEY_WSDL_URL,
-            "label" => $this->translator->trans('Wsdl Url'),
+            "label" => $this->translator->trans('NPS - Wsdl Url'),
         ]);
 
         $event->addSettingOption([
             "key" => \Amulen\PaymentBundle\Model\Gateway\Nps\Setting::KEY_MERCHANT_ID,
-            "label" => $this->translator->trans('Merchant ID'),
+            "label" => $this->translator->trans('NPS - Merchant ID'),
         ]);
 
         $event->addSettingOption([
             "key" => \Amulen\PaymentBundle\Model\Gateway\Nps\Setting::KEY_SECRET_KEY,
-            "label" => $this->translator->trans('Secret Key'),
+            "label" => $this->translator->trans('NPS - Secret Key'),
+        ]);
+
+        /* MP */
+        $event->addSettingOption([
+            "key" => \Amulen\PaymentBundle\Model\Gateway\Mp\Setting::KEY_SECRET_KEY,
+            "label" => $this->translator->trans('MP - Secret Key'),
+        ]);
+
+        $event->addSettingOption([
+            "key" => \Amulen\PaymentBundle\Model\Gateway\Mp\Setting::KEY_MERCHANT_ID,
+            "label" => $this->translator->trans('MP - Merchant ID'),
+        ]);
+
+        $event->addSettingOption([
+            "key" => \Amulen\PaymentBundle\Model\Gateway\Mp\Setting::KEY_ENVIRONMENT,
+            "label" => $this->translator->trans('MP - Environment. Sandbox boolean'),
         ]);
     }
 }

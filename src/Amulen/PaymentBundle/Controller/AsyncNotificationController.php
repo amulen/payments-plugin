@@ -2,47 +2,34 @@
 
 namespace Amulen\PaymentBundle\Controller;
 
+use Amulen\PaymentBundle\Model\Gateway\PaymentButtonGateway;
+use Amulen\PaymentBundle\Model\Gateway\PaymentInfoBuilder;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\HttpFoundation\Request;
 
 class AsyncNotificationController extends Controller
 {
     /**
-     * @Route("/amulen_payment/async_notification/{gatewayId}", name="amulen_nps_payment_async_notification")
+     * @Route("/amulen_payment/async_notification/{gatewayId}", name="amulen_payment_async_notification")
      * @Method("POST")
      * @Template()
      */
-    public function receiveAction(Request $request)
+    public function receiveAction(Request $request, $gatewayId)
     {
 
-        /* @var PaymentService $npsPaymentService */
-        $npsPaymentService = $this->get('nps.payment.service');
+        $paymentInfoBuilderFactory = $this->get('amulen_payment.payment.info.builder.factory');
+        $paymentButtonGatewayFactory = $this->get('amulen_payment.payment.button.gateway.factory');
 
-        $params = [
-            'transaction_id' => $request->get('psp_TransactionId'),
-        ];
+        /* @var PaymentInfoBuilder $paymentInfoBuilder */
+        $paymentInfoBuilder = $paymentInfoBuilderFactory->getPaymentInfoBuilder($gatewayId);
+        $paymentInfo = $paymentInfoBuilder->buildFromRequest($request);
 
-        $session = $request->getSession();
-        $npsResponse = $npsPaymentService->getTxStatus($params);
+        /* @var PaymentButtonGateway $paymentButtonGateway */
+        $paymentButtonGateway = $paymentButtonGatewayFactory->getPaymentButtonGateway($gatewayId);
 
-        if ($npsResponse->getStatus() == \Amulen\NpsBundle\Model\Response::API_OK) {
-
-            /* @var ProductOrderService $productOrderService */
-            $productOrderService = $this->get('amulen.shop.order');
-
-            $productOrder = $productOrderService->getProductOrder($npsResponse->setOrderId());
-            $productOrderService->changeStatusTo($productOrder, ProductOrderStatus::STATUS_PAYED);
-
-            $session->remove('productOrderId');
-            $session->remove('productOrderCount');
-
-            return $this->redirectToRoute('product_order_confirmed');
-        }
-
-        $session->set('error_message', $npsResponse->getMessage());
-
-        return $this->redirectToRoute('product_order_confirmed_error');
+        return $paymentButtonGateway->validatePayment($paymentInfo);
     }
 }

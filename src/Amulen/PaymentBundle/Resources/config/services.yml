@@ -18,3 +18,20 @@ services:
         arguments:
           - "@logger"
           - "@amulen.dashboard.service.setting"
+
+    amulen_payment.gateway.button.mp:
+        class: Amulen\PaymentBundle\Service\Mp\MpPaymentButtonGateway
+        arguments:
+          - "@router"
+          - "@amulen.dashboard.service.setting"
+
+    #Factory
+    amulen_payment.payment.info.builder.factory:
+        class: Amulen\PaymentBundle\Model\Factory\PaymentInfoBuilderFactory
+
+    amulen_payment.payment.button.gateway.factory:
+        class: Amulen\PaymentBundle\Model\Factory\PaymentButtonGatewayFactory
+
+    #Builder
+    amulen_payment.builder.mp:
+        class: Amulen\PaymentBundle\Model\Gateway\Mp\PaymentInfoBuilder

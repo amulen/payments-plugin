@@ -15,4 +15,6 @@ class Setting
     const ENVIRONMENT_DEV = 'development';
     const ENVIRONMENT_PROD = 'production';
 
+    const GATEWAY_ID = 'nps';
+
 }
