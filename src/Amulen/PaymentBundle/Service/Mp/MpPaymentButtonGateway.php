@@ -2,12 +2,14 @@
 
 namespace Amulen\PaymentBundle\Service\Mp;
 
+use Amulen\PaymentBundle\Event\ProcessedPaymentEvent;
 use Amulen\PaymentBundle\Model\Exception\GatewayException;
 use Amulen\PaymentBundle\Model\Gateway\Mp\Setting;
 use Amulen\PaymentBundle\Model\Gateway\PaymentButtonGateway;
 use Amulen\PaymentBundle\Model\Gateway\Response;
 use Amulen\PaymentBundle\Model\Payment\Status;
 use Amulen\SettingsBundle\Model\SettingRepository;
+use Amulen\ShopBundle\Repository\ProductOrderRepository;
 use Symfony\Component\Routing\Router;
 use MercadoPagoException;
 use MP;
@@ -29,18 +31,30 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
     private $router;
 
     /**
+     * @var mixed
+     */
+    private $eventDispatcher;
+
+    /**
      * @var SettingRepository
      */
     private $settings;
 
     /**
+     * @var ProductOrderRepository
+     */
+    private $orderRepository;
+
+    /**
      * PaymentService constructor.
      * @param Router $router
      */
-    public function __construct(Router $router, SettingRepository $settingRepository)
+    public function __construct(Router $router, $eventDispatcher, SettingRepository $settingRepository, ProductOrderRepository $orderRepository)
     {
         $this->router = $router;
+        $this->eventDispatcher = $eventDispatcher;
         $this->settings = $settingRepository;
+        $this->orderRepository = $orderRepository;
     }
 
     /**
@@ -93,45 +107,46 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
     public function validatePayment($paymentInfo)
     {
         if ((!$paymentInfo->getTransactionId() && !$paymentInfo->getPaymentReference()) || !ctype_digit($paymentInfo->getTransactionId())) {
-            http_response_code(400);
-            return;
+            return false;
         }
 
-        $merchant_order_info = [];
+        $merchantOrderInfo = [];
         // Get the payment and the corresponding merchant_order reported by the IPN.
         if ($paymentInfo->getPaymentReference() == 'payment') {
-            $payment_info = $this->getMpSdk()->get("/collections/notifications/" . $paymentInfo->getTransactionId());
-            $merchant_order_info = $this->getMpSdk()->get("/merchant_orders/" . $payment_info["response"]["collection"]["merchant_order_id"]);
+            $mpPaymentInfo = $this->getMpSdk()->get("/collections/notifications/" . $paymentInfo->getTransactionId());
+            $merchantOrderInfo = $this->getMpSdk()->get("/merchant_orders/" . $mpPaymentInfo["response"]["collection"]["merchant_order_id"]);
             // Get the merchant_order reported by the IPN.
         } else if ($paymentInfo->getPaymentReference() == 'merchant_order') {
-            $merchant_order_info = $this->getMpSdk()->get("/merchant_orders/" . $paymentInfo->getTransactionId());
+            $merchantOrderInfo = $this->getMpSdk()->get("/merchant_orders/" . $paymentInfo->getTransactionId());
         }
 
-        if ($merchant_order_info["status"] == 200) {
-            // If the payment's transaction amount is equal (or bigger) than the merchant_order's amount you can release your items
-            $paid_amount = 0;
+        if ($merchantOrderInfo['status'] != 200) {
+            return false;
+        }
 
-            foreach ($merchant_order_info["response"]["payments"] as $payment) {
+        if ($merchantOrderInfo["status"] == 200) {
+            $order = $this->orderRepository->find($merchantOrderInfo['response']['external_reference']);
+
+            $paidAmount = 0;
+            foreach ($merchantOrderInfo["response"]["payments"] as $payment) {
                 if ($payment['status'] == 'approved') {
-                    $paid_amount += $payment['transaction_amount'];
+                    $paidAmount += $payment['transaction_amount'];
                 }
             }
 
-            if ($paid_amount >= $merchant_order_info["response"]["total_amount"]) {
-                if (count($merchant_order_info["response"]["shipments"]) > 0) { // The merchant_order has shipments
-                    if ($merchant_order_info["response"]["shipments"][0]["status"] == "ready_to_ship") {
-                        print_r("Totally paid. Print the label and release your item.");
-                    }
-                } else { // The merchant_order don't has any shipments
-                    print_r("Totally paid. Release your item.");
-                }
-            } else {
-                print_r("Not paid yet. Do not release your item.");
+            if ($paidAmount >= $merchantOrderInfo["response"]["total_amount"]) {
+                // Totally paid. Release your item.
+                $status = Status::APPROVED;
+                $processedPaymentEvent = new ProcessedPaymentEvent($status);
+                $processedPaymentEvent->setOrderId($order->getId());
+
+                $this->eventDispatcher->dispatch(ProcessedPaymentEvent::NAME, $processedPaymentEvent);
+
+                return true;
             }
         }
-        //FIXME: HTTP RESPONSE
-        http_response_code(200);
-        return;
+
+        return false;
     }
 
     /**

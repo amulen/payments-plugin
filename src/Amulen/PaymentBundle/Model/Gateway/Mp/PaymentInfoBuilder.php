@@ -13,8 +13,8 @@ class PaymentInfoBuilder implements \Amulen\PaymentBundle\Model\Gateway\PaymentI
     public function buildFromRequest(Request $request)
     {
         $paymentInfo = new PaymentInfo();
-        $paymentInfo->setTransactionId($request->get('id'));
-        $paymentInfo->setPaymentReference($request->get('topic'));
+        $paymentInfo->setTransactionId($request->query->get('id'));
+        $paymentInfo->setPaymentReference($request->query->get('topic'));
 
         return $paymentInfo;
     }

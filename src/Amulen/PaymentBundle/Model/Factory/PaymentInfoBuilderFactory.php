@@ -21,6 +21,15 @@ class PaymentInfoBuilderFactory
     private $container;
 
     /**
+     * PaymentInfoBuilderFactory constructor.
+     * @param ContainerInterface $container
+     */
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+    }
+
+    /**
      * @param $gatewayId
      * @return PaymentInfoBuilder
      */

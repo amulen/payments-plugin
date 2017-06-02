@@ -9,12 +9,13 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class AsyncNotificationController extends Controller
 {
     /**
      * @Route("/amulen_payment/async_notification/{gatewayId}", name="amulen_payment_async_notification")
-     * @Method("POST")
+     * @Method({"POST", "GET"})
      * @Template()
      */
     public function receiveAction(Request $request, $gatewayId)
@@ -30,6 +31,13 @@ class AsyncNotificationController extends Controller
         /* @var PaymentButtonGateway $paymentButtonGateway */
         $paymentButtonGateway = $paymentButtonGatewayFactory->getPaymentButtonGateway($gatewayId);
 
-        return $paymentButtonGateway->validatePayment($paymentInfo);
+        $response = new Response();
+        $response->setStatusCode(Response::HTTP_BAD_REQUEST);
+
+        if ($paymentButtonGateway->validatePayment($paymentInfo)) {
+            $response->setStatusCode(Response::HTTP_OK);
+        }
+
+        return $response->send();
     }
 }

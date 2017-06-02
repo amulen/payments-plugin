@@ -23,14 +23,20 @@ services:
         class: Amulen\PaymentBundle\Service\Mp\MpPaymentButtonGateway
         arguments:
           - "@router"
+          - "@event_dispatcher"
           - "@amulen.dashboard.service.setting"
+          - "@amulen.shop.repository.order"
 
     #Factory
     amulen_payment.payment.info.builder.factory:
         class: Amulen\PaymentBundle\Model\Factory\PaymentInfoBuilderFactory
+        arguments:
+          - "@service_container"
 
     amulen_payment.payment.button.gateway.factory:
         class: Amulen\PaymentBundle\Model\Factory\PaymentButtonGatewayFactory
+        arguments:
+          - "@service_container"
 
     #Builder
     amulen_payment.builder.mp:
