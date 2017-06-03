@@ -62,16 +62,10 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
      */
     public function getLinkUrl($paymentInfo)
     {
+        $items = $this->itemsToArray($paymentInfo->getPaymentInfoItems());
         $preference_data = array(
             "id" => $paymentInfo->getOrderId(),
-            "items" => array(
-                array(
-                    "title" => "Test Modified",
-                    "quantity" => 1,
-                    "currency_id" => Setting::CURRENCY_PESO,
-                    "unit_price" => $paymentInfo->getUnitPrice()
-                )
-            ),
+            "items" => $items,
             // Volver al sitio del vendedor
             "back_urls" => array(
                 "success" => $this->router->generate('product_order_confirmed', [], Router::ABSOLUTE_URL),
@@ -90,8 +84,12 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
             $returnUrl = $preference["response"]["init_point"];
 
             /* Sandbox Mode */
-            if($this->settings->get(Setting::KEY_ENVIRONMENT)){
-                $returnUrl = $preference["response"]["sandbox_init_point"];
+            $setting = $this->settings->get(Setting::KEY_ENVIRONMENT);
+            if ($setting) {
+                $value = strtolower(trim($setting));
+                if ($value == 'yes' || $value == 'si' || $value == 'on' || $value == 'true') {
+                    $returnUrl = $preference["response"]["sandbox_init_point"];
+                }
             }
 
             return $returnUrl;
@@ -160,5 +158,20 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
         return $this->mpSdk;
     }
 
+    private function itemsToArray($items)
+    {
+        $response = [];
+
+        foreach ($items as $item) {
+            $element['id'] = $item->getItemId() ? $item->getItemId() : null;
+            $element['title'] = $item->getTitle() ? $item->getTitle() : null;
+            $element['description'] = $item->getDescription() ? $item->getDescription() : null;
+            $element['unit_price'] = $item->getUnitPrice() ? $item->getUnitPrice() : null;
+            $element['quantity'] = $item->getQuantity() ? $item->getQuantity() : null;
+            $element['currency_id'] = $item->getCurrencyId() ? $item->getCurrencyId() : null;
+            array_push($response, $element);
+        }
+        return $response;
+    }
 
 }

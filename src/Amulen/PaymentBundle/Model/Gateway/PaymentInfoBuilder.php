@@ -16,4 +16,9 @@ interface PaymentInfoBuilder
      */
     public function buildFromRequest(Request $request);
 
+    /**
+     * @return PaymentInfo
+     */
+    public function buildForButtonGateway($order, $user, $method = null);
+
 }

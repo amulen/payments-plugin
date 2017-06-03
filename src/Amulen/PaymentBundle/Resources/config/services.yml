@@ -41,3 +41,6 @@ services:
     #Builder
     amulen_payment.builder.mp:
         class: Amulen\PaymentBundle\Model\Gateway\Mp\PaymentInfoBuilder
+
+    amulen_payment.builder.nps:
+        class: Amulen\PaymentBundle\Model\Gateway\Nps\PaymentInfoBuilder

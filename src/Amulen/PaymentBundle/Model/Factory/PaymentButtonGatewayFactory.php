@@ -2,7 +2,6 @@
 
 namespace Amulen\PaymentBundle\Model\Factory;
 
-use Amulen\PaymentBundle\Model\Gateway\Mp\Setting;
 use Amulen\PaymentBundle\Model\Gateway\PaymentButtonGateway;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -37,8 +36,12 @@ class PaymentButtonGatewayFactory
     {
         switch ($gatewayId) {
 
-            case Setting::GATEWAY_ID:
+            case \Amulen\PaymentBundle\Model\Gateway\Mp\Setting::GATEWAY_ID:
                 return $this->container->get('amulen_payment.gateway.button.mp');
+                break;
+
+            case \Amulen\PaymentBundle\Model\Gateway\Nps\Setting::GATEWAY_ID:
+                return $this->container->get('amulen_payment.gateway.button.nps');
                 break;
 
             default:

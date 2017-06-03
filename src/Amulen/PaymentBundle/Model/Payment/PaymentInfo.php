@@ -188,10 +188,10 @@ class PaymentInfo
     }
 
     /**
-     * @param mixed $paymentInfoItems
+     * @return PaymentInfoItem $paymentInfoItems
      */
-    public function setRawMaterials($paymentInfoItems)
+    public function getPaymentInfoItems()
     {
-        $this->paymentInfoItems = $paymentInfoItems;
+        return $this->paymentInfoItems;
     }
 }

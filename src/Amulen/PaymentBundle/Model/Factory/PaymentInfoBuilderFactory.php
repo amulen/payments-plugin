@@ -37,8 +37,12 @@ class PaymentInfoBuilderFactory
     {
         switch ($gatewayId) {
 
-            case Setting::GATEWAY_ID:
+            case \Amulen\PaymentBundle\Model\Gateway\Mp\Setting::GATEWAY_ID:
                 return $this->container->get('amulen_payment.builder.mp');
+                break;
+
+            case \Amulen\PaymentBundle\Model\Gateway\Nps\Setting::GATEWAY_ID:
+                return $this->container->get('amulen_payment.builder.nps');
                 break;
 
             default:
