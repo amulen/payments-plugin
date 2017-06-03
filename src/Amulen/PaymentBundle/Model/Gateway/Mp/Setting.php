@@ -9,7 +9,7 @@ class Setting
 {
     const KEY_SECRET_KEY = 'amulen_payment_mp_secret_key';
     const KEY_MERCHANT_ID = 'amulen_payment_mp_merchant_id';
-    const KEY_ENVIRONMENT = 'amulen_payment_mp_environment';
+    const KEY_ENVIRONMENT = 'amulen_payment_mp_sandbox_boolean';
 
     const ENVIRONMENT_DEV = 'development';
     const ENVIRONMENT_PROD = 'production';
