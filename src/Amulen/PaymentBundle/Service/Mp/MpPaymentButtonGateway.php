@@ -109,39 +109,28 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
         }
 
         $merchantOrderInfo = [];
-        $orderId = null;
         // Get the payment and the corresponding merchant_order reported by the IPN.
         if ($paymentInfo->getPaymentReference() == 'payment') {
             $mpPaymentInfo = $this->getMpSdk()->get("/collections/notifications/" . $paymentInfo->getTransactionId());
-            $orderId = $mpPaymentInfo["response"]["collection"]["external_reference"];
+            $merchantOrderInfo = $mpPaymentInfo["response"]["collection"];
         }
 
-        if ($merchantOrderInfo['status'] != 200) {
+        if ($merchantOrderInfo['status'] != 'approved') {
             return false;
         }
 
-        if ($merchantOrderInfo["status"] == 200 && $orderId) {
-            $order = $this->orderRepository->find($orderId);
+        if ($merchantOrderInfo['status'] == 'approved') {
+            $order = $this->orderRepository->find($merchantOrderInfo["external_reference"]);
 
-            $paidAmount = 0;
-            foreach ($merchantOrderInfo["response"]["payments"] as $payment) {
-                if ($payment['status'] == 'approved') {
-                    $paidAmount += $payment['transaction_amount'];
-                }
-            }
+            // Totally paid. Release your item.
+            $status = Status::APPROVED;
+            $processedPaymentEvent = new ProcessedPaymentEvent($status);
+            $processedPaymentEvent->setOrderId($order->getId());
 
-            if ($paidAmount >= $merchantOrderInfo["response"]["total_amount"]) {
-                // Totally paid. Release your item.
-                $status = Status::APPROVED;
-                $processedPaymentEvent = new ProcessedPaymentEvent($status);
-                $processedPaymentEvent->setOrderId($order->getId());
+            $this->eventDispatcher->dispatch(ProcessedPaymentEvent::NAME, $processedPaymentEvent);
 
-                $this->eventDispatcher->dispatch(ProcessedPaymentEvent::NAME, $processedPaymentEvent);
-
-                return true;
-            }
+            return true;
         }
-
         return false;
     }
 
