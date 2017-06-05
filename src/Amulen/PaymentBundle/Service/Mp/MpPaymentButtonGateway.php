@@ -119,7 +119,7 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
             return false;
         }
 
-        if ($merchantOrderInfo['status'] == 'approved') {
+        if ($merchantOrderInfo['status'] == 'approved' && $merchantOrderInfo["external_reference"]) {
             $order = $this->orderRepository->find($merchantOrderInfo["external_reference"]);
 
             // Totally paid. Release your item.

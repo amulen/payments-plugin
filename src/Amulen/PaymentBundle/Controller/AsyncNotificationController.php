@@ -31,12 +31,11 @@ class AsyncNotificationController extends Controller
         /* @var PaymentButtonGateway $paymentButtonGateway */
         $paymentButtonGateway = $paymentButtonGatewayFactory->getPaymentButtonGateway($gatewayId);
 
-        $response = new Response();
-        $response->setStatusCode(Response::HTTP_BAD_REQUEST);
 
-        if ($paymentButtonGateway->validatePayment($paymentInfo)) {
-            $response->setStatusCode(Response::HTTP_OK);
-        }
+        $paymentButtonGateway->validatePayment($paymentInfo);
+
+        $response = new Response();
+        $response->setStatusCode(Response::HTTP_OK);
 
         return $response->send();
     }
