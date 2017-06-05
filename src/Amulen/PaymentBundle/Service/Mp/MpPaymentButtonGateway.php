@@ -109,21 +109,19 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
         }
 
         $merchantOrderInfo = [];
+        $orderId = null;
         // Get the payment and the corresponding merchant_order reported by the IPN.
         if ($paymentInfo->getPaymentReference() == 'payment') {
             $mpPaymentInfo = $this->getMpSdk()->get("/collections/notifications/" . $paymentInfo->getTransactionId());
-            $merchantOrderInfo = $this->getMpSdk()->get("/merchant_orders/" . $mpPaymentInfo["response"]["collection"]["merchant_order_id"]);
-            // Get the merchant_order reported by the IPN.
-        } else if ($paymentInfo->getPaymentReference() == 'merchant_order') {
-            $merchantOrderInfo = $this->getMpSdk()->get("/merchant_orders/" . $paymentInfo->getTransactionId());
+            $orderId = $mpPaymentInfo["response"]["collection"]["external_reference"];
         }
 
         if ($merchantOrderInfo['status'] != 200) {
             return false;
         }
 
-        if ($merchantOrderInfo["status"] == 200) {
-            $order = $this->orderRepository->find($merchantOrderInfo['response']['external_reference']);
+        if ($merchantOrderInfo["status"] == 200 && $orderId) {
+            $order = $this->orderRepository->find($orderId);
 
             $paidAmount = 0;
             foreach ($merchantOrderInfo["response"]["payments"] as $payment) {
