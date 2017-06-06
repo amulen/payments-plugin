@@ -23,6 +23,7 @@ services:
         class: Amulen\PaymentBundle\Service\Mp\MpPaymentButtonGateway
         arguments:
           - "@router"
+          - "@logger"
           - "@event_dispatcher"
           - "@amulen.dashboard.service.setting"
           - "@amulen.shop.repository.order"

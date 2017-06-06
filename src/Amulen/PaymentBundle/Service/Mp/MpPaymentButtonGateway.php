@@ -31,6 +31,11 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
     private $router;
 
     /**
+     * @var string
+     */
+    protected $logger;
+
+    /**
      * @var mixed
      */
     private $eventDispatcher;
@@ -49,9 +54,10 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
      * PaymentService constructor.
      * @param Router $router
      */
-    public function __construct(Router $router, $eventDispatcher, SettingRepository $settingRepository, ProductOrderRepository $orderRepository)
+    public function __construct(Router $router, $logger, $eventDispatcher, SettingRepository $settingRepository, ProductOrderRepository $orderRepository)
     {
         $this->router = $router;
+        $this->logger = $logger;
         $this->eventDispatcher = $eventDispatcher;
         $this->settings = $settingRepository;
         $this->orderRepository = $orderRepository;
@@ -65,6 +71,7 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
         $items = $this->itemsToArray($paymentInfo->getPaymentInfoItems());
         $preference_data = array(
             "id" => $paymentInfo->getOrderId(),
+            "external_reference" => $paymentInfo->getOrderId(),
             "items" => $items,
             // Volver al sitio del vendedor
             "back_urls" => array(
@@ -116,6 +123,8 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
         }
 
         if ($merchantOrderInfo['status'] != 'approved') {
+            $msg = 'Orden no aprovada con Id (MP): '.$paymentInfo->getTransactionId().'. Estado de orden en MP: '. $merchantOrderInfo['status'];
+            $this->logger->critical($msg);
             return false;
         }
 
@@ -129,8 +138,16 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
 
             $this->eventDispatcher->dispatch(ProcessedPaymentEvent::NAME, $processedPaymentEvent);
 
+            /* Log */
+            $msg = 'Orden aprovada con Id (MP): '.$paymentInfo->getTransactionId().'. Estado de orden en MP: '. $merchantOrderInfo['status'];
+            $this->logger->info($msg);
+            $msg = 'External reference (Id orden de la tienda): '.$merchantOrderInfo["external_reference"];
+            $this->logger->info($msg);
+
             return true;
         }
+        $msg = 'Orden fallo. Id (MP): '.$paymentInfo->getTransactionId().'. Estado de orden en MP: '. $merchantOrderInfo['status'];
+        $this->logger->critical($msg);
         return false;
     }
 
