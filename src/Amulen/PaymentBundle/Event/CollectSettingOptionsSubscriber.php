@@ -2,11 +2,8 @@
 
 namespace Amulen\PaymentBundle\Event;
 
-use Flowcode\DashboardBundle\Entity\Setting;
-use Flowcode\DashboardBundle\Event\CollectSettingOptionsEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Translation\TranslatorInterface;
-
 
 /**
  * CollectSettingOptionsSubscriber
@@ -70,6 +67,23 @@ class CollectSettingOptionsSubscriber implements EventSubscriberInterface
         $event->addSettingOption([
             "key" => \Amulen\PaymentBundle\Model\Gateway\Mp\Setting::KEY_ENVIRONMENT,
             "label" => $this->translator->trans('MP - Environment. Sandbox boolean'),
+        ]);
+        
+        
+         /* PAYPAL */
+        $event->addSettingOption([
+            "key" => \Amulen\PaymentBundle\Model\Gateway\Paypal\Setting::KEY_SECRET_KEY,
+            "label" => $this->translator->trans('Paypal - Secret Key'),
+        ]);
+
+        $event->addSettingOption([
+            "key" => \Amulen\PaymentBundle\Model\Gateway\Paypal\Setting::KEY_MERCHANT_ID,
+            "label" => $this->translator->trans('Paypal - Merchant ID'),
+        ]);
+
+        $event->addSettingOption([
+            "key" => \Amulen\PaymentBundle\Model\Gateway\Paypal\Setting::KEY_ENVIRONMENT,
+            "label" => $this->translator->trans('Paypal - Environment. Sandbox boolean'),
         ]);
     }
 }

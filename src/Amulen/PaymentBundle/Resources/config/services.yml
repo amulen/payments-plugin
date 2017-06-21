@@ -18,7 +18,15 @@ services:
         arguments:
           - "@logger"
           - "@amulen.dashboard.service.setting"
-
+          
+    amulen.dashboard.service.setting:
+        class: Amulen\PaymentBundle\Mock\DashboardServiceSetting
+    
+    amulen.shop.repository.order:
+        class: Amulen\PaymentBundle\Mock\ShopRepositoryOrder
+        
+        
+        
     amulen_payment.gateway.button.mp:
         class: Amulen\PaymentBundle\Service\Mp\MpPaymentButtonGateway
         arguments:
@@ -27,6 +35,15 @@ services:
           - "@event_dispatcher"
           - "@amulen.dashboard.service.setting"
           - "@amulen.shop.repository.order"
+
+
+      
+    amulen_payment.gateway.button.paypal:
+        class: Amulen\PaymentBundle\Service\Paypal\PaypalPaymentButtonGateway
+        arguments:
+          - "@router"
+          - "@logger"
+          - "@event_dispatcher"
 
     #Factory
     amulen_payment.payment.info.builder.factory:
@@ -45,3 +62,6 @@ services:
 
     amulen_payment.builder.nps:
         class: Amulen\PaymentBundle\Model\Gateway\Nps\PaymentInfoBuilder
+   
+    amulen_payment.builder.paypal:
+        class: Amulen\PaymentBundle\Model\Gateway\Paypal\PaymentInfoBuilder

@@ -35,13 +35,16 @@ class PaymentButtonGatewayFactory
     public function getPaymentButtonGateway($gatewayId)
     {
         switch ($gatewayId) {
-
             case \Amulen\PaymentBundle\Model\Gateway\Mp\Setting::GATEWAY_ID:
                 return $this->container->get('amulen_payment.gateway.button.mp');
                 break;
 
             case \Amulen\PaymentBundle\Model\Gateway\Nps\Setting::GATEWAY_ID:
                 return $this->container->get('amulen_payment.gateway.button.nps');
+                break;
+            
+            case \Amulen\PaymentBundle\Model\Gateway\Paypal\Setting::GATEWAY_ID:
+                return $this->container->get('amulen_payment.gateway.button.paypal');
                 break;
 
             default:

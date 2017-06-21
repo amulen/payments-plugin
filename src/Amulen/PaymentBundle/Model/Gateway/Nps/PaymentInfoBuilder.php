@@ -2,9 +2,10 @@
 
 namespace Amulen\PaymentBundle\Model\Gateway\Nps;
 
-
 use Amulen\PaymentBundle\Model\Payment\PaymentInfo;
 use Symfony\Component\HttpFoundation\Request;
+use Amulen\PaymentBundle\Model\Payment\PaymentOrderInterface;
+use Flowcode\UserBundle\Entity\UserInterface;
 
 class PaymentInfoBuilder implements \Amulen\PaymentBundle\Model\Gateway\PaymentInfoBuilder
 {
@@ -23,7 +24,7 @@ class PaymentInfoBuilder implements \Amulen\PaymentBundle\Model\Gateway\PaymentI
      * @param null $method
      * @return PaymentInfo
      */
-    public function buildForButtonGateway($order, $user, $method = null)
+    public function buildForButtonGateway(PaymentOrderInterface $order, UserInterface $user, $method = null)
     {
         $currency = '032';
 

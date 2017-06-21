@@ -1,13 +1,12 @@
 <?php
-
-
 namespace Amulen\PaymentBundle\Model\Gateway;
-
 
 use Amulen\PaymentBundle\Model\Payment\PaymentInfo;
 use Symfony\Component\HttpFoundation\Request;
+use Flowcode\UserBundle\Entity\UserInterface;
+use Amulen\PaymentBundle\Model\Payment\PaymentOrderInterface;
 
-interface PaymentInfoBuilder
+interface PaymentInfoBuilderInterface
 {
 
     /**
@@ -19,6 +18,6 @@ interface PaymentInfoBuilder
     /**
      * @return PaymentInfo
      */
-    public function buildForButtonGateway($order, $user, $method = null);
+    public function buildForButtonGateway(PaymentOrderInterface $order, UserInterface $user, $method = null);
 
 }

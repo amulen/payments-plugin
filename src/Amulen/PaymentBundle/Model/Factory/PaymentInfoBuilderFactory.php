@@ -1,5 +1,4 @@
 <?php
-
 namespace Amulen\PaymentBundle\Model\Factory;
 
 use Amulen\PaymentBundle\Model\Gateway\Mp\Setting;
@@ -44,7 +43,9 @@ class PaymentInfoBuilderFactory
             case \Amulen\PaymentBundle\Model\Gateway\Nps\Setting::GATEWAY_ID:
                 return $this->container->get('amulen_payment.builder.nps');
                 break;
-
+            case \Amulen\PaymentBundle\Model\Gateway\Paypal\Setting::GATEWAY_ID:
+                return $this->container->get('amulen_payment.builder.paypal');
+                break;
             default:
                 return null;
         }

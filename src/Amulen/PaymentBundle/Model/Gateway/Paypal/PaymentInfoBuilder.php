@@ -1,13 +1,14 @@
 <?php
-namespace Amulen\PaymentBundle\Model\Gateway\Mp;
+namespace Amulen\PaymentBundle\Model\Gateway\Paypal;
 
 use Amulen\PaymentBundle\Model\Payment\PaymentInfo;
 use Amulen\PaymentBundle\Model\Payment\PaymentInfoItem;
 use Symfony\Component\HttpFoundation\Request;
+use Amulen\PaymentBundle\Model\Gateway\PaymentInfoBuilderInterface; 
 use Amulen\PaymentBundle\Model\Payment\PaymentOrderInterface;
 use Flowcode\UserBundle\Entity\UserInterface;
 
-class PaymentInfoBuilder implements \Amulen\PaymentBundle\Model\Gateway\PaymentInfoBuilder
+class PaymentInfoBuilder implements PaymentInfoBuilderInterface
 {
     /**
      * @param Request $request

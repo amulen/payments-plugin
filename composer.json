@@ -1,20 +1,21 @@
 {
-  "name": "amulen/payments-plugin",
-  "description": "One shot, several birds.",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Juan Manuel Aguero",
-      "email": "juanma.aguero@gmail.com"
+    "name": "amulen/payments-plugin",
+    "description": "One shot, several birds.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Juan Manuel Aguero",
+            "email": "juanma.aguero@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "": "src/"
+        }
+    },
+    "require": {
+        "amulen/nps-bundle": "^0.1",
+        "mercadopago/sdk": "0.5.2",
+        "paypal/merchant-sdk-php": "dev-master"
     }
-  ],
-  "autoload": {
-    "psr-0": {
-      "": "src/"
-    }
-  },
-  "require": {
-    "amulen/nps-bundle": "^0.1",
-    "mercadopago/sdk": "0.5.2"
-  }
 }
