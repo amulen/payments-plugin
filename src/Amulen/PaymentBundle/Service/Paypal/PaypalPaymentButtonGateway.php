@@ -3,15 +3,13 @@ namespace Amulen\PaymentBundle\Service\Paypal;
 
 use Amulen\PaymentBundle\Event\ProcessedPaymentEvent;
 use Amulen\PaymentBundle\Model\Exception\GatewayException;
-use Amulen\PaymentBundle\Model\Gateway\Mp\Setting;
+use Amulen\PaymentBundle\Model\Gateway\Paypal\Setting;
 use Amulen\PaymentBundle\Model\Gateway\PaymentButtonGateway;
 use Amulen\PaymentBundle\Model\Gateway\Response;
 use Amulen\PaymentBundle\Model\Payment\Status;
-use Amulen\SettingsBundle\Model\SettingRepository;
 use Amulen\ShopBundle\Repository\ProductOrderRepository;
 use Symfony\Component\Routing\Router;
-use MercadoPagoException;
-use MP;
+use Amulen\SettingsBundle\Model\SettingRepository;
 use PayPal\CoreComponentTypes\BasicAmountType;
 use PayPal\PayPalAPI\SetExpressCheckoutRequestType;
 use PayPal\PayPalAPI\SetExpressCheckoutReq;
@@ -60,11 +58,11 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
      * PaymentService constructor.
      * @param Router $router
      */
-    public function __construct(Router $router, $logger, $eventDispatcher)
+    public function __construct(Router $router, $logger, SettingRepository $settingRepository)
     {
         $this->router = $router;
         $this->logger = $logger;
-        $this->eventDispatcher = $eventDispatcher;
+        $this->settings = $settingRepository;
     }
 
     /**
@@ -74,9 +72,9 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
     {
         $config = array(
             'mode' => 'sandbox',
-            "acct1.UserName" => "julian.scialabba-facilitator_api1.gmail.com",
-            "acct1.Password" => "5V8APZFGGW42F449",
-            "acct1.Signature" => "AiPC9BjkCyDFQXbSkoZcgqH3hpacAsGvVzYhqtp2zEgDVBZDQDpgauZM",
+            "acct1.UserName" => $this->settings->get(Setting::KEY_USERNAME),
+            "acct1.Password" => $this->settings->get(Setting::KEY_PASSWORD),
+            "acct1.Signature" => $this->settings->get(Setting::KEY_SIGNATURE)
         );
 
         $paypalService = new PayPalAPIInterfaceServiceService($config);

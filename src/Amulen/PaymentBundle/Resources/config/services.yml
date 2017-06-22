@@ -21,7 +21,10 @@ services:
           
     amulen.dashboard.service.setting:
         class: Amulen\PaymentBundle\Mock\DashboardServiceSetting
-    
+        arguments:
+            - "@service_container"
+            
+            
     amulen.shop.repository.order:
         class: Amulen\PaymentBundle\Mock\ShopRepositoryOrder
         
@@ -43,8 +46,8 @@ services:
         arguments:
           - "@router"
           - "@logger"
-          - "@event_dispatcher"
-
+          - "@amulen.dashboard.service.setting"
+          
     #Factory
     amulen_payment.payment.info.builder.factory:
         class: Amulen\PaymentBundle\Model\Factory\PaymentInfoBuilderFactory
