@@ -1,6 +1,7 @@
 <?php
 namespace Amulen\PaymentBundle\Service\Paypal;
 
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Amulen\PaymentBundle\Event\ProcessedPaymentEvent;
 use Amulen\PaymentBundle\Model\Exception\GatewayException;
 use Amulen\PaymentBundle\Model\Gateway\Paypal\Setting;
@@ -17,6 +18,7 @@ use PayPal\Service\PayPalAPIInterfaceServiceService;
 use PayPal\EBLBaseComponents\PaymentDetailsType;
 use PayPal\EBLBaseComponents\PaymentDetailsItemType;
 use PayPal\EBLBaseComponents\SetExpressCheckoutRequestDetailsType;
+use Amulen\PaymentBundle\Model\Payment\PaymentInfo;
 
 /**
  * Paypal buttons payments gateway.
@@ -24,10 +26,7 @@ use PayPal\EBLBaseComponents\SetExpressCheckoutRequestDetailsType;
 class PaypalPaymentButtonGateway implements PaymentButtonGateway
 {
 
-    /**
-     * @var PaymentService
-     */
-    private $mpSdk;
+    protected $container;
 
     /**
      * @var Router
@@ -40,56 +39,46 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
     protected $logger;
 
     /**
-     * @var mixed
-     */
-    private $eventDispatcher;
-
-    /**
      * @var SettingRepository
      */
     private $settings;
 
     /**
-     * @var ProductOrderRepository
-     */
-    private $orderRepository;
-
-    /**
      * PaymentService constructor.
      * @param Router $router
      */
-    public function __construct(Router $router, $logger, SettingRepository $settingRepository)
+    public function __construct(Router $router, ContainerInterface $container, $logger, SettingRepository $settingRepository)
     {
         $this->router = $router;
+        $this->container = $container;
         $this->logger = $logger;
         $this->settings = $settingRepository;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getLinkUrl($paymentInfo)
+    public function getLinkUrl(PaymentInfo $paymentInfo)
     {
         $config = array(
-            'mode' => 'sandbox',
             "acct1.UserName" => $this->settings->get(Setting::KEY_USERNAME),
             "acct1.Password" => $this->settings->get(Setting::KEY_PASSWORD),
             "acct1.Signature" => $this->settings->get(Setting::KEY_SIGNATURE)
         );
+        if ($this->settings->get(Setting::ENVIRONMENT_SANDBOX)) {
+            $config['mode'] = 'sandbox';
+        } else {
+            $config['mode'] = 'live';
+        }
+        $paymentInfoItem = $paymentInfo->getPaymentInfoItems()[0];
 
         $paypalService = new PayPalAPIInterfaceServiceService($config);
 
-        $returnUrl = "http://www.google.com.ar/DGdoExpressCheckout.php";
-        $cancelUrl = "http://www.google.com.ar/DGsetEC.html.php";
-
         $orderTotal = new BasicAmountType();
-        $orderTotal->currencyID = 'USD';
+        $orderTotal->currencyID = $paymentInfo->getCurrencyId();
         $orderTotal->value = $paymentInfo->getUnitPrice();
+
         $itemDetails = new PaymentDetailsItemType();
-        $itemDetails->Name = 'sample item';
-        $itemDetails->Amount = $orderTotal;
-        $itemDetails->Quantity = '1';
-        $itemDetails->ItemCategory = 'Digital';
+        $itemDetails->Name = $paymentInfoItem->getTitle();
+        $itemDetails->Amount = $paymentInfoItem->getUnitPrice();
+        $itemDetails->Quantity = $paymentInfoItem->getQuantity();
 
         $PaymentDetails = new PaymentDetailsType();
         $PaymentDetails->PaymentDetailsItem[0] = $itemDetails;
@@ -99,91 +88,36 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
 
         $setECReqDetails = new SetExpressCheckoutRequestDetailsType();
         $setECReqDetails->PaymentDetails[0] = $PaymentDetails;
-        $setECReqDetails->CancelURL = $cancelUrl;
-        $setECReqDetails->ReturnURL = $returnUrl;
+        $setECReqDetails->ReturnURL = $this->container->getParameter('front_url_payment_success', [], Router::ABSOLUTE_URL);
+        $setECReqDetails->CancelURL = $this->container->getParameter('front_url_payment_error', [], Router::ABSOLUTE_URL);
 
         $setECReqType = new SetExpressCheckoutRequestType();
         $setECReqType->SetExpressCheckoutRequestDetails = $setECReqDetails;
+
         $setECReq = new SetExpressCheckoutReq();
         $setECReq->SetExpressCheckoutRequest = $setECReqType;
-
+        var_dump($setECReq);
 
         $setECResponse = $paypalService->SetExpressCheckout($setECReq);
+        var_dump($setECResponse);
+
         $token = $setECResponse->Token;
+        //https://www.paypal.com/cgi?bin/webscr?cmd=_express-checkout&token=value_returned_by_SetExpressCheckoutResponse
         $payPalURL = 'https://www.sandbox.paypal.com/incontext?token=' . $token;
+        $paypalOkUrl = 'https://www.paypal.com/cgi?bin/webscr?cmd=_express-checkout&token=' . $token;
+        var_dump($payPalURL);
+        var_dump($paypalOkUrl);
 
         return $payPalURL;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function validatePayment($paymentInfo)
+    public function validatePayment(PaymentInfo $paymentInfo): Response
     {
-        if ((!$paymentInfo->getTransactionId() && !$paymentInfo->getPaymentReference()) || !ctype_digit($paymentInfo->getTransactionId())) {
-            return false;
-        }
+        $response = new Response();
+        $response->setMessage('OK');
+        $response->setStatus(Status::APPROVED);
+        $response->setOrderId($paymentInfo->getOrderId());
 
-        $merchantOrderInfo = [];
-// Get the payment and the corresponding merchant_order reported by the IPN.
-        if ($paymentInfo->getPaymentReference() == 'payment') {
-            $mpPaymentInfo = $this->getMpSdk()->get("/collections/notifications/" . $paymentInfo->getTransactionId());
-            $merchantOrderInfo = $mpPaymentInfo["response"]["collection"];
-        }
-
-        if ($merchantOrderInfo['status'] != 'approved') {
-            $msg = 'Orden no aprovada con Id (MP): ' . $paymentInfo->getTransactionId() . '. Estado de orden en MP: ' . $merchantOrderInfo['status'];
-            $this->logger->critical($msg);
-            return false;
-        }
-
-        if ($merchantOrderInfo['status'] == 'approved' && $merchantOrderInfo["external_reference"]) {
-            $order = $this->orderRepository->find($merchantOrderInfo["external_reference"]);
-
-// Totally paid. Release your item.
-            $status = Status::APPROVED;
-            $processedPaymentEvent = new ProcessedPaymentEvent($status);
-            $processedPaymentEvent->setOrderId($order->getId());
-
-            $this->eventDispatcher->dispatch(ProcessedPaymentEvent::NAME, $processedPaymentEvent);
-
-            /* Log */
-            $msg = 'Orden aprovada con Id (MP): ' . $paymentInfo->getTransactionId() . '. Estado de orden en MP: ' . $merchantOrderInfo['status'];
-            $this->logger->info($msg);
-            $msg = 'External reference (Id orden de la tienda): ' . $merchantOrderInfo["external_reference"];
-            $this->logger->info($msg);
-
-            return true;
-        }
-        $msg = 'Orden fallo. Id (MP): ' . $paymentInfo->getTransactionId() . '. Estado de orden en MP: ' . $merchantOrderInfo['status'];
-        $this->logger->critical($msg);
-        return false;
-    }
-
-    /**
-     * @return MP
-     */
-    public function getMpSdk()
-    {
-        if (!$this->mpSdk) {
-            $this->mpSdk = new MP($this->settings->get(Setting::KEY_MERCHANT_ID), $this->settings->get(Setting::KEY_SECRET_KEY));
-        }
-        return $this->mpSdk;
-    }
-
-    private function itemsToArray($items)
-    {
-        $response = [];
-
-        foreach ($items as $item) {
-            $element['id'] = $item->getItemId() ? $item->getItemId() : null;
-            $element['title'] = $item->getTitle() ? $item->getTitle() : null;
-            $element['description'] = $item->getDescription() ? $item->getDescription() : null;
-            $element['unit_price'] = $item->getUnitPrice() ? $item->getUnitPrice() : null;
-            $element['quantity'] = $item->getQuantity() ? $item->getQuantity() : null;
-            $element['currency_id'] = $item->getCurrencyId() ? $item->getCurrencyId() : null;
-            array_push($response, $element);
-        }
         return $response;
     }
 }

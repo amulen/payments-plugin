@@ -35,14 +35,14 @@ class PaymentInfoBuilder implements PaymentInfoBuilderInterface
         $paymentInfo->setUnitPrice($order->getTotal());
         $paymentInfo->setCustomerMail($user->getEmail());
         //TODO: Improve currency
-        $paymentInfo->setCurrencyId(Setting::CURRENCY_PESO);
+        $paymentInfo->setCurrencyId('USD');
         $paymentInfo->setOrderId($order->getId());
 
         //TODO: Add each items to paymentInfo
         $paymentInfoItem = new PaymentInfoItem();
         $paymentInfoItem->setItemId($order->getId());
         //TODO: Improve currency
-        $paymentInfoItem->setCurrencyId(Setting::CURRENCY_PESO);
+        $paymentInfoItem->setCurrencyId('USD');
         $paymentInfoItem->setTitle('Pedido número: '. $order->getId());
         $paymentInfoItem->setQuantity(1);
         $paymentInfoItem->setUnitPrice($order->getTotal());

@@ -45,6 +45,7 @@ services:
         class: Amulen\PaymentBundle\Service\Paypal\PaypalPaymentButtonGateway
         arguments:
           - "@router"
+          - "@service_container"
           - "@logger"
           - "@amulen.dashboard.service.setting"
           
