@@ -16,6 +16,6 @@
     "require": {
         "amulen/nps-bundle": "^0.1",
         "mercadopago/sdk": "0.5.2",
-        "paypal/merchant-sdk-php": "dev-master"
+        "paypal/merchant-sdk-php": "^3.11.0"
     }
 }
