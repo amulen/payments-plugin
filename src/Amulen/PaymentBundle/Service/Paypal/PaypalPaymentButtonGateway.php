@@ -1,4 +1,5 @@
 <?php
+
 namespace Amulen\PaymentBundle\Service\Paypal;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -23,8 +24,7 @@ use Amulen\PaymentBundle\Model\Payment\PaymentInfo;
 /**
  * Paypal buttons payments gateway.
  */
-class PaypalPaymentButtonGateway implements PaymentButtonGateway
-{
+class PaypalPaymentButtonGateway implements PaymentButtonGateway {
 
     protected $container;
 
@@ -47,26 +47,26 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
      * PaymentService constructor.
      * @param Router $router
      */
-    public function __construct(Router $router, ContainerInterface $container, $logger, SettingRepository $settingRepository)
-    {
+    public function __construct(Router $router, ContainerInterface $container, $logger, SettingRepository $settingRepository) {
         $this->router = $router;
         $this->container = $container;
         $this->logger = $logger;
         $this->settings = $settingRepository;
     }
 
-    public function getLinkUrl(PaymentInfo $paymentInfo)
-    {
+    public function getLinkUrl(PaymentInfo $paymentInfo) {
+        $urlPaypal = 'https://www.paypal.com/cgi?bin/webscr?cmd=_express-checkout&token=';
         $config = array(
+            "mode" => "live",
             "acct1.UserName" => $this->settings->get(Setting::KEY_USERNAME),
             "acct1.Password" => $this->settings->get(Setting::KEY_PASSWORD),
             "acct1.Signature" => $this->settings->get(Setting::KEY_SIGNATURE)
         );
         if ($this->settings->get(Setting::ENVIRONMENT_SANDBOX)) {
             $config['mode'] = 'sandbox';
-        } else {
-            $config['mode'] = 'live';
+            $urlPaypal = 'https://www.sandbox.paypal.com/webscr?cmd=_express-checkout&token=';
         }
+
         $paymentInfoItem = $paymentInfo->getPaymentInfoItems()[0];
 
         $paypalService = new PayPalAPIInterfaceServiceService($config);
@@ -79,40 +79,43 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
         $itemDetails->Name = $paymentInfoItem->getTitle();
         $itemDetails->Amount = $paymentInfoItem->getUnitPrice();
         $itemDetails->Quantity = $paymentInfoItem->getQuantity();
+        $itemDetails->ItemCategory = 'Digital';
 
-        $PaymentDetails = new PaymentDetailsType();
-        $PaymentDetails->PaymentDetailsItem[0] = $itemDetails;
-        $PaymentDetails->OrderTotal = $orderTotal;
-        $PaymentDetails->PaymentAction = 'Sale';
-        $PaymentDetails->ItemTotal = $orderTotal;
+        $paymentDetails = new PaymentDetailsType();
+        $paymentDetails->PaymentDetailsItem[0] = $itemDetails;
+        $paymentDetails->OrderTotal = $orderTotal;
+        $paymentDetails->ItemTotal = $orderTotal;
+        $paymentDetails->PaymentAction = 'Sale';
+        $paymentDetails->NotifyURL = $this->router->generate('amulen_payment_async_notification', ['gatewayId' => Setting::GATEWAY_ID], Router::ABSOLUTE_URL);
+
 
         $setECReqDetails = new SetExpressCheckoutRequestDetailsType();
-        $setECReqDetails->PaymentDetails[0] = $PaymentDetails;
+        $setECReqDetails->PaymentDetails[0] = $paymentDetails;
         $setECReqDetails->ReturnURL = $this->container->getParameter('front_url_payment_success', [], Router::ABSOLUTE_URL);
         $setECReqDetails->CancelURL = $this->container->getParameter('front_url_payment_error', [], Router::ABSOLUTE_URL);
+        $setECReqDetails->NoShipping = 1;
+        $setECReqDetails->ReqConfirmShipping = 0;
+        $setECReqDetails->BrandName = 'Cloudlance';
 
         $setECReqType = new SetExpressCheckoutRequestType();
         $setECReqType->SetExpressCheckoutRequestDetails = $setECReqDetails;
-
         $setECReq = new SetExpressCheckoutReq();
         $setECReq->SetExpressCheckoutRequest = $setECReqType;
-        var_dump($setECReq);
 
         $setECResponse = $paypalService->SetExpressCheckout($setECReq);
-        var_dump($setECResponse);
 
         $token = $setECResponse->Token;
-        //https://www.paypal.com/cgi?bin/webscr?cmd=_express-checkout&token=value_returned_by_SetExpressCheckoutResponse
-        $payPalURL = 'https://www.sandbox.paypal.com/incontext?token=' . $token;
-        $paypalOkUrl = 'https://www.paypal.com/cgi?bin/webscr?cmd=_express-checkout&token=' . $token;
-        var_dump($payPalURL);
-        var_dump($paypalOkUrl);
+        $AcK = $setECResponse->Token;
 
-        return $payPalURL;
+        $paypalUrlToken = $urlPaypal . $token;
+        var_dump($token);
+        var_dump($AcK);
+        var_dump($this->router->generate('amulen_payment_async_notification', ['gatewayId' => Setting::GATEWAY_ID], Router::ABSOLUTE_URL));
+        var_dump($paypalUrlToken);
+        return $paypalUrlToken;
     }
 
-    public function validatePayment(PaymentInfo $paymentInfo): Response
-    {
+    public function validatePayment(PaymentInfo $paymentInfo): Response {
         $response = new Response();
         $response->setMessage('OK');
         $response->setStatus(Status::APPROVED);
@@ -120,4 +123,5 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
 
         return $response;
     }
+
 }

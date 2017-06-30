@@ -17,6 +17,7 @@ class PaymentInfoBuilder implements PaymentInfoBuilderInterface
     public function buildFromRequest(Request $request)
     {
         $paymentInfo = new PaymentInfo();
+        var_dump($request->query);
         $paymentInfo->setTransactionId($request->query->get('id'));
         $paymentInfo->setPaymentReference($request->query->get('topic'));
 

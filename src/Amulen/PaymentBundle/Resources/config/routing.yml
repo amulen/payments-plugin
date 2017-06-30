@@ -1,0 +1,4 @@
+amulen_payment:
+    resource: "@AmulenPaymentBundle/Controller/"
+    type:     annotation
+    prefix:   /

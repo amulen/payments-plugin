@@ -21,7 +21,7 @@ class PaypalPaymentButtonGatewayTest extends BaseTestCase
     {
         $paymentOrder = new PaymentOrder();
         $orderId = 1;
-        $total = 100;
+        $total = 1;
         $userEmail = 'user@user.com';
         $paymentOrder->setId($orderId);
         $paymentOrder->setTotal($total);
