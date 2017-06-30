@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Amulen\PaymentBundle\Model\Payment\PaymentOrderInterface;
 use Flowcode\UserBundle\Entity\UserInterface;
 
-class PaymentInfoBuilder implements \Amulen\PaymentBundle\Model\Gateway\PaymentInfoBuilder
+class PaymentInfoBuilder implements \Amulen\PaymentBundle\Model\Gateway\PaymentInfoBuilderInterface
 {
     /**
      * @param Request $request

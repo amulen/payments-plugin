@@ -20,7 +20,7 @@ interface PaymentButtonGateway
      * @return string
      * @throws GatewayException
      */
-    public function getLinkUrl(PaymentInfo $paymentInfo);
+    public function getLinkUrl($paymentInfo);
 
     /**
      * Validate the Payment.
@@ -29,6 +29,6 @@ interface PaymentButtonGateway
      * @return Response
      * @throws GatewayException
      */
-    public function validatePayment(PaymentInfo $paymentInfo);
+    public function validatePayment($paymentInfo);
 
 }

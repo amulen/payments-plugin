@@ -54,7 +54,7 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
         $this->settings = $settingRepository;
     }
 
-    public function getLinkUrl(PaymentInfo $paymentInfo) {
+    public function getLinkUrl($paymentInfo) {
         $urlPaypal = 'https://www.paypal.com/cgi?bin/webscr?cmd=_express-checkout&token=';
         $config = array(
             "mode" => "live",
@@ -115,7 +115,7 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
         return $paypalUrlToken;
     }
 
-    public function validatePayment(PaymentInfo $paymentInfo): Response {
+    public function validatePayment($paymentInfo): Response {
         $response = new Response();
         $response->setMessage('OK');
         $response->setStatus(Status::APPROVED);
