@@ -24,6 +24,8 @@ use PayPal\Api\FlowConfig;
 use PayPal\Api\Presentation;
 use PayPal\Api\InputFields;
 use PayPal\Api\PayerInfo;
+use PayPal\Rest\ApiContext;
+use PayPal\Api\PaymentOptions;
 
 class PaypalPaymentButtonGateway implements PaymentButtonGateway {
 
@@ -54,7 +56,7 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
         $this->container = $container;
         $this->logger = $logger;
         $this->settings = $settingRepository;
-        $this->apiContext = new \PayPal\Rest\ApiContext(
+        $this->apiContext = new ApiContext(
                 new OAuthTokenCredential(
                 $this->settings->get(Setting::CLIENT_ID), $this->settings->get(Setting::CLIENT_SECRET)
                 )
@@ -69,33 +71,38 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
     }
 
     public function getLinkUrl($paymentInfo) {
-        $experiencedProfile = $this->createExperiencedProfile();
+        $experiencedProfile = $this->createExperiencedProfile($paymentInfo);
         $payerInfo = new PayerInfo();
-        $payerInfo->setEmail($paymentInfo->getEmail());
+        $payerInfo->setEmail($paymentInfo->getCustomerMail());
         $payer = new Payer();
         $payer->setPaymentMethod("paypal");
         $payer->setPayerInfo($payerInfo);
 
-        $item = new Item();
-        $item->setName('Suscripcion mensual Cloudlance')
-                ->setCurrency('USD')
-                ->setQuantity(1)
-                ->setSku('1')
-                ->setPrice(10);
+        $items = array();
+        foreach ($paymentInfo->getPaymentInfoItems() as $currentItem) {
+            $item = new Item();
+            $item->setName($currentItem->getTitle())
+                    ->setCurrency('USD')
+                    ->setQuantity($currentItem->getQuantity())
+                    ->setSku($paymentInfo->getOrderId())
+                    ->setPrice($currentItem->getUnitPrice());
+            array_push($items, $item);
+        }
+
 
         $itemList = new ItemList();
-        $itemList->setItems(array($item));
+        $itemList->setItems($items);
 
         $amount = new Amount();
         $amount->setCurrency("USD")
-                ->setTotal(10);
+                ->setTotal($paymentInfo->getUnitPrice());
 
-        $paymentOptions = new \PayPal\Api\PaymentOptions();
+        $paymentOptions = new PaymentOptions();
         $paymentOptions->setAllowedPaymentMethod("IMMEDIATE_PAY");
         $transaction = new Transaction();
         $transaction->setAmount($amount)
                 ->setItemList($itemList)
-                ->setDescription("Suscripcion mensual Cloudlance")
+                ->setDescription($paymentInfo->getDescription())
                 ->setPaymentOptions($paymentOptions);
 
 
@@ -115,19 +122,21 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
         return $approvalUrl;
     }
 
-    private function createExperiencedProfile() {
+    private function createExperiencedProfile($paymentInfo) {
+        $this->cleanWebsProfile();
         $websProfile = WebProfile::get_list($this->apiContext);
         if (empty($websProfile)) {
             $flowConfig = new FlowConfig();
             $flowConfig->setUserAction('commit');
+
             $presentation = new Presentation();
-            $presentation->setBrandName('Cloudlance')
-                    ->setLogoImage('https://app.cloudlance.co/assets/img/logos/logo.png');
+            $presentation->setBrandName($paymentInfo->getBrandName())
+                    ->setLogoImage($paymentInfo->getBrandLogo());
             $inputFields = new InputFields();
             $inputFields->setAllowNote(false)
                     ->setNoShipping(1);
             $newWebProfile = new \PayPal\Api\WebProfile();
-            $newWebProfile->setName('Web profile Cloudlance')
+            $newWebProfile->setName('Profile ' . $paymentInfo->getBrandName())
                     ->setPresentation($presentation)
                     ->setFlowConfig($flowConfig)
                     ->setInputFields($inputFields)
@@ -135,9 +144,7 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
             $webProfile = $newWebProfile->create($this->apiContext);
             return $webProfile;
         }
-        $webProfileJson = $websProfile[0];
-        $webProfile = WebProfile::get($webProfileJson->getId(), $this->apiContext);
-        return $webProfile;
+        return $websProfile[0];
     }
 
     public function validatePayment($paymentInfo): Response {
@@ -147,6 +154,13 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
         $response->setOrderId($paymentInfo->getOrderId());
 
         return $response;
+    }
+
+    private function cleanWebsProfile() {
+        $websProfile = WebProfile::get_list($this->apiContext);
+        foreach ($websProfile as $webProfileJson) {
+            $webProfileJson->delete($this->apiContext);
+        }
     }
 
 }

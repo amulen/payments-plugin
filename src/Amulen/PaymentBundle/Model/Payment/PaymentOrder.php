@@ -1,32 +1,56 @@
 <?php
+
 namespace Amulen\PaymentBundle\Model\Payment;
 
 /**
  * @author juliansci
  */
-class PaymentOrder implements PaymentOrderInterface
-{
+class PaymentOrder implements PaymentOrderInterface {
 
     private $id;
     private $total;
+    private $description;
+    private $brandName;
+    private $brandLogo;
 
-    function getId()
-    {
+    function getId() {
         return $this->id;
     }
 
-    function getTotal()
-    {
+    function getTotal() {
         return $this->total;
     }
 
-    function setId($id)
-    {
+    function setId($id) {
         $this->id = $id;
     }
 
-    function setTotal($total)
-    {
+    function setTotal($total) {
         $this->total = $total;
     }
+
+    function getDescription() {
+        return $this->description;
+    }
+
+    function setDescription($description) {
+        $this->description = $description;
+    }
+
+    function getBrandName() {
+        return $this->brandName;
+    }
+
+    function getBrandLogo() {
+        return $this->brandLogo;
+    }
+
+    function setBrandName($brandName) {
+        $this->brandName = $brandName;
+    }
+
+    function setBrandLogo($brandLogo) {
+        $this->brandLogo = $brandLogo;
+    }
+
 }
