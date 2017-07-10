@@ -8,9 +8,8 @@ class Setting
 {
 
     const GATEWAY_ID = 'paypal';
-    const KEY_USERNAME = 'amulen_payment_paypal_username';
-    const KEY_PASSWORD = 'amulen_payment_paypal_password';
-    const KEY_SIGNATURE = 'amulen_payment_paypal_signature';
+    const CLIENT_ID = 'amulen_payment_paypal_client_id';
+    const CLIENT_SECRET = 'amulen_payment_paypal_client_secret';
     const ENVIRONMENT_SANDBOX = 'amulen_payment_paypal_sandbox';
 
 }

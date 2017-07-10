@@ -1,7 +1,7 @@
 <?php
 namespace Amulen\PaymentBundle\Tests\Service\Paypal;
 
-use Cloudlance\ApiBundle\Tests\BaseTestCase;
+use Amulen\PaymentBundle\Tests\BaseTestCase;
 use Amulen\PaymentBundle\Model\Payment\PaymentOrder;
 use Flowcode\UserBundle\Entity\UserInterface;
 
@@ -42,7 +42,7 @@ class PaypalPaymentButtonGatewayTest extends BaseTestCase
         $this->assertEquals(1, sizeof($paymentInfo->getPaymentInfoItems()));
 
         $url = $this->paypalPaymentButtonGateway->getLinkUrl($paymentInfo);
-        
+        var_dump($url);
         $this->assertNotNull($url);
     }
 }

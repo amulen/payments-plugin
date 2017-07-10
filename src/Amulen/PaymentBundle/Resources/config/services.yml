@@ -39,7 +39,6 @@ services:
           - "@amulen.dashboard.service.setting"
           - "@amulen.shop.repository.order"
 
-
       
     amulen_payment.gateway.button.paypal:
         class: Amulen\PaymentBundle\Service\Paypal\PaypalPaymentButtonGateway

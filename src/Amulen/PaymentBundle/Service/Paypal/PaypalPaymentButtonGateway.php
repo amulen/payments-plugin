@@ -9,21 +9,22 @@ use Amulen\PaymentBundle\Model\Gateway\Paypal\Setting;
 use Amulen\PaymentBundle\Model\Gateway\PaymentButtonGateway;
 use Amulen\PaymentBundle\Model\Gateway\Response;
 use Amulen\PaymentBundle\Model\Payment\Status;
-use Amulen\ShopBundle\Repository\ProductOrderRepository;
 use Symfony\Component\Routing\Router;
 use Amulen\SettingsBundle\Model\SettingRepository;
-use PayPal\CoreComponentTypes\BasicAmountType;
-use PayPal\PayPalAPI\SetExpressCheckoutRequestType;
-use PayPal\PayPalAPI\SetExpressCheckoutReq;
-use PayPal\Service\PayPalAPIInterfaceServiceService;
-use PayPal\EBLBaseComponents\PaymentDetailsType;
-use PayPal\EBLBaseComponents\PaymentDetailsItemType;
-use PayPal\EBLBaseComponents\SetExpressCheckoutRequestDetailsType;
-use Amulen\PaymentBundle\Model\Payment\PaymentInfo;
+use PayPal\Auth\OAuthTokenCredential;
+use PayPal\Api\Payer;
+use PayPal\Api\Item;
+use PayPal\Api\Transaction;
+use PayPal\Api\ItemList;
+use PayPal\Api\Amount;
+use PayPal\Api\RedirectUrls;
+use PayPal\Api\Payment;
+use PayPal\Api\WebProfile;
+use PayPal\Api\FlowConfig;
+use PayPal\Api\Presentation;
+use PayPal\Api\InputFields;
+use PayPal\Api\PayerInfo;
 
-/**
- * Paypal buttons payments gateway.
- */
 class PaypalPaymentButtonGateway implements PaymentButtonGateway {
 
     protected $container;
@@ -42,6 +43,7 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
      * @var SettingRepository
      */
     private $settings;
+    private $apiContext;
 
     /**
      * PaymentService constructor.
@@ -52,67 +54,90 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
         $this->container = $container;
         $this->logger = $logger;
         $this->settings = $settingRepository;
+        $this->apiContext = new \PayPal\Rest\ApiContext(
+                new OAuthTokenCredential(
+                $this->settings->get(Setting::CLIENT_ID), $this->settings->get(Setting::CLIENT_SECRET)
+                )
+        );
+        $apiConfig = array();
+        if ($this->settings->get(Setting::ENVIRONMENT_SANDBOX)) {
+            $apiConfig['mode'] = 'sandbox';
+        } else {
+            $apiConfig['mode'] = 'live';
+        }
+        $this->apiContext->setConfig($apiConfig);
     }
 
     public function getLinkUrl($paymentInfo) {
-        $urlPaypal = 'https://www.paypal.com/cgi?bin/webscr?cmd=_express-checkout&token=';
-        $config = array(
-            "mode" => "live",
-            "acct1.UserName" => $this->settings->get(Setting::KEY_USERNAME),
-            "acct1.Password" => $this->settings->get(Setting::KEY_PASSWORD),
-            "acct1.Signature" => $this->settings->get(Setting::KEY_SIGNATURE)
-        );
-        if ($this->settings->get(Setting::ENVIRONMENT_SANDBOX)) {
-            $config['mode'] = 'sandbox';
-            $urlPaypal = 'https://www.sandbox.paypal.com/webscr?cmd=_express-checkout&token=';
+        $experiencedProfile = $this->createExperiencedProfile();
+        $payerInfo = new PayerInfo();
+        $payerInfo->setEmail($paymentInfo->getEmail());
+        $payer = new Payer();
+        $payer->setPaymentMethod("paypal");
+        $payer->setPayerInfo($payerInfo);
+
+        $item = new Item();
+        $item->setName('Suscripcion mensual Cloudlance')
+                ->setCurrency('USD')
+                ->setQuantity(1)
+                ->setSku('1')
+                ->setPrice(10);
+
+        $itemList = new ItemList();
+        $itemList->setItems(array($item));
+
+        $amount = new Amount();
+        $amount->setCurrency("USD")
+                ->setTotal(10);
+
+        $paymentOptions = new \PayPal\Api\PaymentOptions();
+        $paymentOptions->setAllowedPaymentMethod("IMMEDIATE_PAY");
+        $transaction = new Transaction();
+        $transaction->setAmount($amount)
+                ->setItemList($itemList)
+                ->setDescription("Suscripcion mensual Cloudlance")
+                ->setPaymentOptions($paymentOptions);
+
+
+        $redirectUrls = new RedirectUrls();
+        $redirectUrls->setReturnUrl($this->container->getParameter('front_url_payment_success', [], Router::ABSOLUTE_URL))
+                ->setCancelUrl($this->container->getParameter('front_url_payment_error', [], Router::ABSOLUTE_URL));
+
+        $payment = new Payment();
+        $payment->setIntent("sale")
+                ->setPayer($payer)
+                ->setRedirectUrls($redirectUrls)
+                ->setTransactions(array($transaction))
+                ->setExperienceProfileId($experiencedProfile->getId());
+
+        $payment->create($this->apiContext);
+        $approvalUrl = $payment->getApprovalLink();
+        return $approvalUrl;
+    }
+
+    private function createExperiencedProfile() {
+        $websProfile = WebProfile::get_list($this->apiContext);
+        if (empty($websProfile)) {
+            $flowConfig = new FlowConfig();
+            $flowConfig->setUserAction('commit');
+            $presentation = new Presentation();
+            $presentation->setBrandName('Cloudlance')
+                    ->setLogoImage('https://app.cloudlance.co/assets/img/logos/logo.png');
+            $inputFields = new InputFields();
+            $inputFields->setAllowNote(false)
+                    ->setNoShipping(1);
+            $newWebProfile = new \PayPal\Api\WebProfile();
+            $newWebProfile->setName('Web profile Cloudlance')
+                    ->setPresentation($presentation)
+                    ->setFlowConfig($flowConfig)
+                    ->setInputFields($inputFields)
+                    ->setTemporary(false);
+            $webProfile = $newWebProfile->create($this->apiContext);
+            return $webProfile;
         }
-
-        $paymentInfoItem = $paymentInfo->getPaymentInfoItems()[0];
-
-        $paypalService = new PayPalAPIInterfaceServiceService($config);
-
-        $orderTotal = new BasicAmountType();
-        $orderTotal->currencyID = $paymentInfo->getCurrencyId();
-        $orderTotal->value = $paymentInfo->getUnitPrice();
-
-        $itemDetails = new PaymentDetailsItemType();
-        $itemDetails->Name = $paymentInfoItem->getTitle();
-        $itemDetails->Amount = $paymentInfoItem->getUnitPrice();
-        $itemDetails->Quantity = $paymentInfoItem->getQuantity();
-        $itemDetails->ItemCategory = 'Digital';
-
-        $paymentDetails = new PaymentDetailsType();
-        $paymentDetails->PaymentDetailsItem[0] = $itemDetails;
-        $paymentDetails->OrderTotal = $orderTotal;
-        $paymentDetails->ItemTotal = $orderTotal;
-        $paymentDetails->PaymentAction = 'Sale';
-        $paymentDetails->NotifyURL = $this->router->generate('amulen_payment_async_notification', ['gatewayId' => Setting::GATEWAY_ID], Router::ABSOLUTE_URL);
-
-
-        $setECReqDetails = new SetExpressCheckoutRequestDetailsType();
-        $setECReqDetails->PaymentDetails[0] = $paymentDetails;
-        $setECReqDetails->ReturnURL = $this->container->getParameter('front_url_payment_success', [], Router::ABSOLUTE_URL);
-        $setECReqDetails->CancelURL = $this->container->getParameter('front_url_payment_error', [], Router::ABSOLUTE_URL);
-        $setECReqDetails->NoShipping = 1;
-        $setECReqDetails->ReqConfirmShipping = 0;
-        $setECReqDetails->BrandName = 'Cloudlance';
-
-        $setECReqType = new SetExpressCheckoutRequestType();
-        $setECReqType->SetExpressCheckoutRequestDetails = $setECReqDetails;
-        $setECReq = new SetExpressCheckoutReq();
-        $setECReq->SetExpressCheckoutRequest = $setECReqType;
-
-        $setECResponse = $paypalService->SetExpressCheckout($setECReq);
-
-        $token = $setECResponse->Token;
-        $AcK = $setECResponse->Token;
-
-        $paypalUrlToken = $urlPaypal . $token;
-        var_dump($token);
-        var_dump($AcK);
-        var_dump($this->router->generate('amulen_payment_async_notification', ['gatewayId' => Setting::GATEWAY_ID], Router::ABSOLUTE_URL));
-        var_dump($paypalUrlToken);
-        return $paypalUrlToken;
+        $webProfileJson = $websProfile[0];
+        $webProfile = WebProfile::get($webProfileJson->getId(), $this->apiContext);
+        return $webProfile;
     }
 
     public function validatePayment($paymentInfo): Response {
