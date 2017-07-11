@@ -103,13 +103,12 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
         $transaction->setAmount($amount)
                 ->setItemList($itemList)
                 ->setDescription($paymentInfo->getDescription())
-                ->setPaymentOptions($paymentOptions);
-
+                ->setPaymentOptions($paymentOptions)
+                ->setNotifyUrl($this->container->getParameter('back_url_payment_notify'));
 
         $redirectUrls = new RedirectUrls();
         $redirectUrls->setReturnUrl($this->container->getParameter('front_url_payment_success', [], Router::ABSOLUTE_URL))
                 ->setCancelUrl($this->container->getParameter('front_url_payment_error', [], Router::ABSOLUTE_URL));
-
         $payment = new Payment();
         $payment->setIntent("sale")
                 ->setPayer($payer)
