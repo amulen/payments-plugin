@@ -14,4 +14,7 @@ interface PaymentOrderInterface {
 
     public function getBrandLogo();
 
+    public function getPaymentId();
+
+    public function getPayerId();
 }

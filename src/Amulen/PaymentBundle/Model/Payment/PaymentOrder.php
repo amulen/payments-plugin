@@ -12,6 +12,8 @@ class PaymentOrder implements PaymentOrderInterface {
     private $description;
     private $brandName;
     private $brandLogo;
+    private $paymentId;
+    private $payerId;
 
     function getId() {
         return $this->id;
@@ -51,6 +53,22 @@ class PaymentOrder implements PaymentOrderInterface {
 
     function setBrandLogo($brandLogo) {
         $this->brandLogo = $brandLogo;
+    }
+
+    function getPaymentId() {
+        return $this->paymentId;
+    }
+
+    function getPayerId() {
+        return $this->payerId;
+    }
+
+    function setPaymentId($paymentId) {
+        $this->paymentId = $paymentId;
+    }
+
+    function setPayerId($payerId) {
+        $this->payerId = $payerId;
     }
 
 }

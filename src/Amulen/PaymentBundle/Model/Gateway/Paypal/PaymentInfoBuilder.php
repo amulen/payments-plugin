@@ -36,10 +36,12 @@ class PaymentInfoBuilder implements PaymentInfoBuilderInterface {
         $paymentInfo->setCustomerMail($user->getEmail());
         $paymentInfo->setDescription($order->getDescription());
         $paymentInfo->setCurrencyId('USD');
-        $paymentInfo->setPaymentReference($user->getId());
+        $paymentInfo->setCustomerId($user->getId());
         $paymentInfo->setBrandName($order->getBrandName());
         $paymentInfo->setBrandLogo($order->getBrandLogo());
         $paymentInfo->setOrderId($order->getId());
+        $paymentInfo->setPaymentId($order->getPaymentId());
+        $paymentInfo->setPayerId($order->getPayerId());
         $paymentInfoItem = new PaymentInfoItem();
         $paymentInfoItem->setCurrencyId('USD');
         $paymentInfoItem->setQuantity(1);

@@ -15,6 +15,7 @@ class PaymentInfo {
     private $orderId;
     private $transactionId;
     private $currencyId;
+    private $customerId;
     private $methodId;
     private $paymentReference;
     private $customerMail;
@@ -23,6 +24,8 @@ class PaymentInfo {
     private $description;
     private $brandName;
     private $brandLogo;
+    private $paymentId;
+    private $payerId;
 
     public function __construct() {
         $this->paymentInfoItems = new ArrayCollection();
@@ -197,6 +200,30 @@ class PaymentInfo {
 
     function setBrandLogo($brandLogo) {
         $this->brandLogo = $brandLogo;
+    }
+
+    function getCustomerId() {
+        return $this->customerId;
+    }
+
+    function setCustomerId($customerId) {
+        $this->customerId = $customerId;
+    }
+
+    function getPaymentId() {
+        return $this->paymentId;
+    }
+
+    function getPayerId() {
+        return $this->payerId;
+    }
+
+    function setPaymentId($paymentId) {
+        $this->paymentId = $paymentId;
+    }
+
+    function setPayerId($payerId) {
+        $this->payerId = $payerId;
     }
 
 }

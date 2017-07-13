@@ -68,3 +68,10 @@ services:
    
     amulen_payment.builder.paypal:
         class: Amulen\PaymentBundle\Model\Gateway\Paypal\PaymentInfoBuilder
+        
+    amulen_payment.paypal.service:
+        class: Amulen\PaymentBundle\Service\Paypal\PaypalService
+        arguments:
+          - "@doctrine.orm.entity_manager"
+          - "@service_container"
+          

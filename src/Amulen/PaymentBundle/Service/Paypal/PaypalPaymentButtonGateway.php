@@ -26,6 +26,7 @@ use PayPal\Api\InputFields;
 use PayPal\Api\PayerInfo;
 use PayPal\Rest\ApiContext;
 use PayPal\Api\PaymentOptions;
+use PayPal\Api\PaymentExecution;
 
 class PaypalPaymentButtonGateway implements PaymentButtonGateway {
 
@@ -104,7 +105,8 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
                 ->setItemList($itemList)
                 ->setDescription($paymentInfo->getDescription())
                 ->setPaymentOptions($paymentOptions)
-                ->setNotifyUrl($this->container->getParameter('back_url_payment_notify'));
+                ->setNotifyUrl($this->container->getParameter('back_url_payment_notify'))
+                ->setCustom($paymentInfo->getCustomerId());
 
         $redirectUrls = new RedirectUrls();
         $redirectUrls->setReturnUrl($this->container->getParameter('front_url_payment_success', [], Router::ABSOLUTE_URL))
@@ -121,9 +123,26 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
         return $approvalUrl;
     }
 
+    public function confirmPayment($paymentInfo) {
+        $paymentId = $paymentInfo->getPaymentId();
+        $payerId = $paymentInfo->getPayerId();
+        if ($paymentId != null && $payerId != null) {
+            try {
+                $payment = Payment::get($paymentId, $this->apiContext);
+                $execution = new PaymentExecution();
+                $execution->setPayerId($payerId);
+                return $payment->execute($execution, $this->apiContext);
+            } catch (\PayPal\Exception\PayPalConnectionException $ex) {
+                throw new \InvalidArgumentException('payment:confirm:invalid');
+            }
+        } else {
+            throw new \InvalidArgumentException('payment:confirm:invalid');
+        }
+    }
+
     private function createExperiencedProfile($paymentInfo) {
-        $this->cleanWebsProfile();
         $websProfile = WebProfile::get_list($this->apiContext);
+//$this->cleanWebsProfile($websProfile);
         if (empty($websProfile)) {
             $flowConfig = new FlowConfig();
             $flowConfig->setUserAction('commit');
@@ -147,19 +166,12 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
     }
 
     public function validatePayment($paymentInfo): Response {
-        $response = new Response();
-        $response->setMessage('OK');
-        $response->setStatus(Status::APPROVED);
-        $response->setOrderId($paymentInfo->getOrderId());
-
-        return $response;
+        
     }
 
-    private function cleanWebsProfile() {
-        $websProfile = WebProfile::get_list($this->apiContext);
-        foreach ($websProfile as $webProfileJson) {
-            $webProfileJson->delete($this->apiContext);
-        }
-    }
-
+    /*  private function cleanWebsProfile($websProfile) {
+      foreach ($websProfile as $webProfileJson) {
+      $webProfileJson->delete($this->apiContext);
+      }
+      } */
 }
