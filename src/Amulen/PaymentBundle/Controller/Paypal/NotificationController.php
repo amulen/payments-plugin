@@ -10,7 +10,7 @@ use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 class NotificationController extends Controller {
-    
+
     /**
      * Test IPN
      *
@@ -51,18 +51,18 @@ class NotificationController extends Controller {
      * @Method("POST")
      */
     public function receiveAction(Request $request) {
-        /*
-          $publicFilesPath = $this->container->getParameter('public_files_path');
-          if (!is_dir($publicFilesPath)) {
-          mkdir($publicFilesPath, 0755, true);
-          }
-          $fullPath = $publicFilesPath . 'pruebaPaypal.txt';
-          $ifp = fopen($fullPath, "wb");
-          fwrite($ifp, "Fecha: " . date("D M d, Y G:i"));
-          fwrite($ifp, "\n" . 'Recibido: ' . json_encode($request->getContent()));
-          fclose($ifp);
 
-         */
+        $publicFilesPath = $this->container->getParameter('public_files_path');
+        if (!is_dir($publicFilesPath)) {
+            mkdir($publicFilesPath, 0755, true);
+        }
+        $fullPath = $publicFilesPath . 'pruebaPaypal.txt';
+        $ifp = fopen($fullPath, "wb");
+        fwrite($ifp, "Fecha: " . date("D M d, Y G:i"));
+        fwrite($ifp, "\n" . 'Recibido: ' . json_encode($request->getContent()));
+        fclose($ifp);
+
+
 
         // 1. Get data from paypal and convert to array
         $raw_post_data = "transaction_subject=Suscripcion+mensual+a+Cloudlance&payment_date=15%3A32%3A40+Jul+13%2C+2017+PDT&txn_type=cart&last_name=buyer&residence_country=US&payment_gross=12.00&mc_currency=USD&business=julian.scialabba-facilitator%40gmail.com&payment_type=instant&protection_eligibility=Ineligible&num_cart_items=1&verify_sign=ACUe-E7Hjxmeel8FjYAtjnx-yjHAAsG-Yeq6NkSJpC2IOUBYJBdm0Hfp&payer_status=verified&test_ipn=1&payer_email=julian.scialabba-buyer%40gmail.com&txn_id=10N38228F44981253&receiver_email=julian.scialabba-facilitator%40gmail.com&first_name=test&payer_id=CTEFMN6K9UAG2&receiver_id=Y4HQMX522X926&payment_status=Completed&payment_fee=0.65&mc_fee=0.65&mc_gross=12.00&custom=&mc_gross_1=12.00&item_name1=&charset=windows-1252&notify_version=3.8&item_number1=1&quantity1=1&ipn_track_id=5f1465091b0df";
@@ -108,7 +108,7 @@ class NotificationController extends Controller {
 
         // 3. Verificar que sea un llamado de paypal verificado e implementar acordemente
         if (strcmp($res, "VERIFIED") == 0) {
-            
+
             var_dump($myPost);
             $paypalService = $this->get('amulen_payment.paypal.service');
             $paypalService->verifyNotification($dataNotification);
