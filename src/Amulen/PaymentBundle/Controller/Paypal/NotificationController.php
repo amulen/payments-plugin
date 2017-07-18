@@ -52,16 +52,16 @@ class NotificationController extends Controller {
      */
     public function receiveAction(Request $request) {
 
-        /*   $publicFilesPath = $this->container->getParameter('public_files_path');
-          if (!is_dir($publicFilesPath)) {
-          mkdir($publicFilesPath, 0755, true);
-          }
-          $fullPath = $publicFilesPath . 'pruebaPaypal.txt';
-          $ifp = fopen($fullPath, "wb");
-          fwrite($ifp, "Fecha: " . date("D M d, Y G:i"));
-          fwrite($ifp, "\n" . 'Recibido: ' . json_encode($request->getContent()));
-          fclose($ifp);
-         */
+        $publicFilesPath = $this->container->getParameter('public_files_path');
+        if (!is_dir($publicFilesPath)) {
+            mkdir($publicFilesPath, 0755, true);
+        }
+        $fullPath = $publicFilesPath . 'pruebaPaypal.txt';
+        $ifp = fopen($fullPath, "wb");
+        fwrite($ifp, "Fecha: " . date("D M d, Y G:i"));
+        fwrite($ifp, "\n" . 'Recibido: ' . json_encode($request->getContent()));
+        fclose($ifp);
+
         // 1. Get data from paypal and convert to array
         $raw_post_data = $request->getContent();
         $dataNotification = explode('&', $raw_post_data);
