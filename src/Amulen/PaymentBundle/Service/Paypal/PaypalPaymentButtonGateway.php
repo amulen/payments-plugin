@@ -117,7 +117,6 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
                 ->setRedirectUrls($redirectUrls)
                 ->setTransactions(array($transaction))
                 ->setExperienceProfileId($experiencedProfile->getId());
-
         $payment->create($this->apiContext);
         $approvalUrl = $payment->getApprovalLink();
         return $approvalUrl;
@@ -142,11 +141,11 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
 
     private function createExperiencedProfile($paymentInfo) {
         $websProfile = WebProfile::get_list($this->apiContext);
-//$this->cleanWebsProfile($websProfile);
+        //    $this->cleanWebsProfile($websProfile);
         if (empty($websProfile)) {
             $flowConfig = new FlowConfig();
             $flowConfig->setUserAction('commit');
-
+            $flowConfig->setLandingPageType("Billing");
             $presentation = new Presentation();
             $presentation->setBrandName($paymentInfo->getBrandName())
                     ->setLogoImage($paymentInfo->getBrandLogo());
@@ -169,7 +168,7 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
         
     }
 
-    /*  private function cleanWebsProfile($websProfile) {
+    /* private function cleanWebsProfile($websProfile) {
       foreach ($websProfile as $webProfileJson) {
       $webProfileJson->delete($this->apiContext);
       }
