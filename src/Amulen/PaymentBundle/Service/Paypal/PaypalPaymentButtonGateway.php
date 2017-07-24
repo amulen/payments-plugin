@@ -82,7 +82,7 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
         $items = array();
         foreach ($paymentInfo->getPaymentInfoItems() as $currentItem) {
             $item = new Item();
-            $item->setName($currentItem->getTitle())
+            $item->setName($currentItem->getDescription())
                     ->setCurrency('USD')
                     ->setQuantity($currentItem->getQuantity())
                     ->setSku($paymentInfo->getOrderId())
@@ -151,7 +151,8 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
                     ->setLogoImage($paymentInfo->getBrandLogo());
             $inputFields = new InputFields();
             $inputFields->setAllowNote(false)
-                    ->setNoShipping(1);
+                    ->setNoShipping(1)
+            ;
             $newWebProfile = new \PayPal\Api\WebProfile();
             $newWebProfile->setName('Profile ' . $paymentInfo->getBrandName())
                     ->setPresentation($presentation)

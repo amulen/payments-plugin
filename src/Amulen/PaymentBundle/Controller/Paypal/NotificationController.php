@@ -12,41 +12,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 class NotificationController extends Controller {
 
     /**
-     * Test IPN
-     *
-     * #### Response ok ####
-     * List(PaymentLog)
-     *
-     * #### Response error ####
-     * {
-     * "success": false,
-     * "message": "Error message"
-     * }
-     *
-     * #### Response user not logged ####
-     * {
-     *  "code": 401,
-     *  "message": "Invalid credentials" or "Invalid JWT token"
-     * }
-     *
-     *
-     * @ApiDoc(
-     *  description="Test IPN",
-     *  section="Cloudlance Payment IPN",
-     *  authentication = true,
-     *  headers= {
-     *      {
-     *          "name"= "Authorization",
-     *          "required"="true",
-     *          "description"= "Bearer {token}"
-     *      }
-     *  },
-     *  statusCodes={
-     *         200="Returned when successful",
-     *         401="Returned when the user unauthorized",
-     *     }
-     * )
-     *
      * @Route("/amulen_payment/notification/paypal", name="amulen_payment_notification_paypal")
      * @Method("POST")
      */
