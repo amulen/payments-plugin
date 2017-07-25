@@ -5,7 +5,8 @@ namespace Amulen\PaymentBundle\Model\Payment;
 /**
  * @author juliansci
  */
-class PaymentOrder implements PaymentOrderInterface {
+class PaymentOrder implements PaymentOrderInterface
+{
 
     private $id;
     private $total;
@@ -14,61 +15,86 @@ class PaymentOrder implements PaymentOrderInterface {
     private $brandLogo;
     private $paymentId;
     private $payerId;
+    private $countryCode;
 
-    function getId() {
+    function getId()
+    {
         return $this->id;
     }
 
-    function getTotal() {
+    function getTotal()
+    {
         return $this->total;
     }
 
-    function setId($id) {
+    function setId($id)
+    {
         $this->id = $id;
     }
 
-    function setTotal($total) {
+    function setTotal($total)
+    {
         $this->total = $total;
     }
 
-    function getDescription() {
+    function getDescription()
+    {
         return $this->description;
     }
 
-    function setDescription($description) {
+    function setDescription($description)
+    {
         $this->description = $description;
     }
 
-    function getBrandName() {
+    function getBrandName()
+    {
         return $this->brandName;
     }
 
-    function getBrandLogo() {
+    function getBrandLogo()
+    {
         return $this->brandLogo;
     }
 
-    function setBrandName($brandName) {
+    function setBrandName($brandName)
+    {
         $this->brandName = $brandName;
     }
 
-    function setBrandLogo($brandLogo) {
+    function setBrandLogo($brandLogo)
+    {
         $this->brandLogo = $brandLogo;
     }
 
-    function getPaymentId() {
+    function getPaymentId()
+    {
         return $this->paymentId;
     }
 
-    function getPayerId() {
+    function getPayerId()
+    {
         return $this->payerId;
     }
 
-    function setPaymentId($paymentId) {
+    function setPaymentId($paymentId)
+    {
         $this->paymentId = $paymentId;
     }
 
-    function setPayerId($payerId) {
+    function setPayerId($payerId)
+    {
         $this->payerId = $payerId;
+    }
+
+    function getCountryCode()
+    {
+        return $this->countryCode;
+    }
+
+    function setCountryCode($countryCode)
+    {
+        $this->countryCode = $countryCode;
     }
 
 }

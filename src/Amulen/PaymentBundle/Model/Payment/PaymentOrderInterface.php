@@ -2,7 +2,8 @@
 
 namespace Amulen\PaymentBundle\Model\Payment;
 
-interface PaymentOrderInterface {
+interface PaymentOrderInterface
+{
 
     public function getId();
 
@@ -17,4 +18,6 @@ interface PaymentOrderInterface {
     public function getPaymentId();
 
     public function getPayerId();
+
+    public function getCountryCode();
 }

@@ -27,8 +27,10 @@ use PayPal\Api\PayerInfo;
 use PayPal\Rest\ApiContext;
 use PayPal\Api\PaymentOptions;
 use PayPal\Api\PaymentExecution;
+use PayPal\Api\Address;
 
-class PaypalPaymentButtonGateway implements PaymentButtonGateway {
+class PaypalPaymentButtonGateway implements PaymentButtonGateway
+{
 
     protected $container;
 
@@ -47,12 +49,14 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
      */
     private $settings;
     private $apiContext;
+    private $validCountryCodes;
 
     /**
      * PaymentService constructor.
      * @param Router $router
      */
-    public function __construct(Router $router, ContainerInterface $container, $logger, SettingRepository $settingRepository) {
+    public function __construct(Router $router, ContainerInterface $container, $logger, SettingRepository $settingRepository)
+    {
         $this->router = $router;
         $this->container = $container;
         $this->logger = $logger;
@@ -69,60 +73,70 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
             $apiConfig['mode'] = 'live';
         }
         $this->apiContext->setConfig($apiConfig);
+        $this->validCountryCodes = array('AL', 'DZ', 'AD', 'AO', 'AI', 'AG', 'AR', 'AM', 'AW', 'AU', 'AT', 'AZ', 'BS', 'BH', 'BB', 'BY', 'BE', 'BZ', 'BJ', 'BM', 'BT', 'BO', 'BA', 'BW', 'BR', 'VG', 'BN', 'BG', 'BF', 'BI', 'KH', 'CM', 'CA', 'CV', 'KY', 'TD', 'CL', 'C2', 'CO', 'KM', 'CG', 'CD', 'CK', 'CR', 'CI', 'HR', 'CY', 'CZ', 'DK', 'DJ', 'DM', 'DO', 'EC', 'EG', 'SV', 'ER', 'EE', 'ET', 'FK', 'FO', 'FJ', 'FI', 'FR', 'GF', 'PF', 'GA', 'GM', 'GE', 'DE', 'GI', 'GR', 'GL', 'GD', 'GP', 'GT', 'GN', 'GW', 'GY', 'HN', 'HK', 'HU', 'IS', 'IN', 'ID', 'IE', 'IL', 'IT', 'JM', 'JP', 'JO', 'KZ', 'KE', 'KI', 'KW', 'KG', 'LA', 'LV', 'LS', 'LI', 'LT', 'LU', 'MK', 'MG', 'MW', 'MY', 'MV', 'ML', 'MT', 'MH', 'MQ', 'MR', 'MU', 'YT', 'MX', 'FM', 'MD', 'MC', 'MN', 'ME', 'MS', 'MA', 'MZ', 'NA', 'NR', 'NP', 'NL', 'NC', 'NZ', 'NI', 'NE', 'NG', 'NU', 'NF', 'NO', 'OM', 'PW', 'PA', 'PG', 'PY', 'PE', 'PH', 'PN', 'PL', 'PT', 'QA', 'RE', 'RO', 'RU', 'RW', 'WS', 'SM', 'ST', 'SA', 'SN', 'RS', 'SC', 'SL', 'SG', 'SK', 'SI', 'SB', 'SO', 'ZA', 'KR', 'ES', 'LK', 'SH', 'KN', 'LC', 'PM', 'VC', 'SR', 'SJ', 'SZ', 'SE', 'CH', 'TW', 'TJ', 'TZ', 'TH', 'TG', 'TO', 'TT', 'TN', 'TM', 'TC', 'TV', 'UG', 'UA', 'AE', 'GB', 'US', 'UY', 'VU', 'VA', 'VE', 'VN', 'WF', 'YE', 'ZM', 'ZW');
     }
 
-    public function getLinkUrl($paymentInfo) {
-        $experiencedProfile = $this->createExperiencedProfile($paymentInfo);
-        $payerInfo = new PayerInfo();
-        $payerInfo->setEmail($paymentInfo->getCustomerMail());
-        $payer = new Payer();
-        $payer->setPaymentMethod("paypal");
-        $payer->setPayerInfo($payerInfo);
+    public function getLinkUrl($paymentInfo)
+    {
 
-        $items = array();
-        foreach ($paymentInfo->getPaymentInfoItems() as $currentItem) {
-            $item = new Item();
-            $item->setName($currentItem->getDescription())
-                    ->setCurrency('USD')
-                    ->setQuantity($currentItem->getQuantity())
-                    ->setSku($paymentInfo->getOrderId())
-                    ->setPrice($currentItem->getUnitPrice());
-            array_push($items, $item);
+        try {
+            $experiencedProfile = $this->createExperiencedProfile($paymentInfo);
+
+            $payerInfo = new PayerInfo();
+            $payerInfo->setEmail($paymentInfo->getCustomerMail());
+            $payer = new Payer();
+            $payer->setPaymentMethod("paypal");
+            $payer->setPayerInfo($payerInfo);
+
+            $items = array();
+            foreach ($paymentInfo->getPaymentInfoItems() as $currentItem) {
+                $item = new Item();
+                $item->setName($currentItem->getDescription())
+                        ->setCurrency('USD')
+                        ->setQuantity($currentItem->getQuantity())
+                        ->setSku($paymentInfo->getOrderId())
+                        ->setPrice($currentItem->getUnitPrice());
+                array_push($items, $item);
+            }
+
+
+            $itemList = new ItemList();
+            $itemList->setItems($items);
+
+            $amount = new Amount();
+            $amount->setCurrency("USD")
+                    ->setTotal($paymentInfo->getUnitPrice());
+
+            $paymentOptions = new PaymentOptions();
+            $paymentOptions->setAllowedPaymentMethod("IMMEDIATE_PAY");
+            $transaction = new Transaction();
+            $transaction->setAmount($amount)
+                    ->setItemList($itemList)
+                    ->setDescription($paymentInfo->getDescription())
+                    ->setPaymentOptions($paymentOptions)
+                    ->setNotifyUrl($this->container->getParameter('back_url_payment_notify'))
+                    ->setCustom($paymentInfo->getCustomerId());
+
+            $redirectUrls = new RedirectUrls();
+            $redirectUrls->setReturnUrl($this->container->getParameter('front_url_payment_success', [], Router::ABSOLUTE_URL))
+                    ->setCancelUrl($this->container->getParameter('front_url_payment_error', [], Router::ABSOLUTE_URL));
+            var_dump($paymentInfo->getCountryCode());
+            $payment = new Payment();
+            $payment->setIntent("sale")
+                    ->setPayer($payer)
+                    ->setRedirectUrls($redirectUrls)
+                    ->setTransactions(array($transaction))
+                    ->setExperienceProfileId($experiencedProfile->getId());
+            $payment->create($this->apiContext);
+            $approvalUrl = $payment->getApprovalLink();
+            return $approvalUrl;
+        } catch (\Exception $ex) {
+            return $ex->getMessage();
         }
-
-
-        $itemList = new ItemList();
-        $itemList->setItems($items);
-
-        $amount = new Amount();
-        $amount->setCurrency("USD")
-                ->setTotal($paymentInfo->getUnitPrice());
-
-        $paymentOptions = new PaymentOptions();
-        $paymentOptions->setAllowedPaymentMethod("IMMEDIATE_PAY");
-        $transaction = new Transaction();
-        $transaction->setAmount($amount)
-                ->setItemList($itemList)
-                ->setDescription($paymentInfo->getDescription())
-                ->setPaymentOptions($paymentOptions)
-                ->setNotifyUrl($this->container->getParameter('back_url_payment_notify'))
-                ->setCustom($paymentInfo->getCustomerId());
-
-        $redirectUrls = new RedirectUrls();
-        $redirectUrls->setReturnUrl($this->container->getParameter('front_url_payment_success', [], Router::ABSOLUTE_URL))
-                ->setCancelUrl($this->container->getParameter('front_url_payment_error', [], Router::ABSOLUTE_URL));
-        $payment = new Payment();
-        $payment->setIntent("sale")
-                ->setPayer($payer)
-                ->setRedirectUrls($redirectUrls)
-                ->setTransactions(array($transaction))
-                ->setExperienceProfileId($experiencedProfile->getId());
-        $payment->create($this->apiContext);
-        $approvalUrl = $payment->getApprovalLink();
-        return $approvalUrl;
     }
 
-    public function confirmPayment($paymentInfo) {
+    public function confirmPayment($paymentInfo)
+    {
         $paymentId = $paymentInfo->getPaymentId();
         $payerId = $paymentInfo->getPayerId();
         if ($paymentId != null && $payerId != null) {
@@ -139,39 +153,37 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway {
         }
     }
 
-    private function createExperiencedProfile($paymentInfo) {
-        $websProfile = WebProfile::get_list($this->apiContext);
-        //    $this->cleanWebsProfile($websProfile);
-        if (empty($websProfile)) {
-            $flowConfig = new FlowConfig();
-            $flowConfig->setUserAction('commit');
-            $flowConfig->setLandingPageType("Billing");
-            $presentation = new Presentation();
-            $presentation->setBrandName($paymentInfo->getBrandName())
-                    ->setLogoImage($paymentInfo->getBrandLogo());
-            $inputFields = new InputFields();
-            $inputFields->setAllowNote(false)
-                    ->setNoShipping(1)
-            ;
-            $newWebProfile = new \PayPal\Api\WebProfile();
-            $newWebProfile->setName('Profile ' . $paymentInfo->getBrandName())
-                    ->setPresentation($presentation)
-                    ->setFlowConfig($flowConfig)
-                    ->setInputFields($inputFields)
-                    ->setTemporary(false);
-            $webProfile = $newWebProfile->create($this->apiContext);
-            return $webProfile;
+    private function createExperiencedProfile($paymentInfo)
+    {
+        $flowConfig = new FlowConfig();
+        $flowConfig->setUserAction('commit');
+        $flowConfig->setLandingPageType("Billing");
+        $presentation = new Presentation();
+        $presentation->setBrandName($paymentInfo->getBrandName())
+                ->setLogoImage($paymentInfo->getBrandLogo());
+
+        if ($paymentInfo->getCountryCode() && in_array($paymentInfo->getCountryCode(), $this->validCountryCodes)) {
+            $presentation->setLocaleCode($paymentInfo->getCountryCode());
+        } else {
+            $presentation->setLocaleCode('AR');
         }
-        return $websProfile[0];
+
+        $inputFields = new InputFields();
+        $inputFields->setAllowNote(false)
+                ->setNoShipping(1);
+        $newWebProfile = new \PayPal\Api\WebProfile();
+        $newWebProfile->setName('Profile ' . $paymentInfo->getBrandName() . strtotime('now'))
+                ->setPresentation($presentation)
+                ->setFlowConfig($flowConfig)
+                ->setInputFields($inputFields)
+                ->setTemporary(true);
+        $webProfile = $newWebProfile->create($this->apiContext);
+        return $webProfile;
     }
 
-    public function validatePayment($paymentInfo): Response {
+    public function validatePayment($paymentInfo): Response
+    {
         
     }
 
-    /* private function cleanWebsProfile($websProfile) {
-      foreach ($websProfile as $webProfileJson) {
-      $webProfileJson->delete($this->apiContext);
-      }
-      } */
 }
