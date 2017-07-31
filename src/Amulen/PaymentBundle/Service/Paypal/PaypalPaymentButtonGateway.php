@@ -120,7 +120,6 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
             $redirectUrls = new RedirectUrls();
             $redirectUrls->setReturnUrl($this->container->getParameter('front_url_payment_success', [], Router::ABSOLUTE_URL))
                     ->setCancelUrl($this->container->getParameter('front_url_payment_error', [], Router::ABSOLUTE_URL));
-            var_dump($paymentInfo->getCountryCode());
             $payment = new Payment();
             $payment->setIntent("sale")
                     ->setPayer($payer)
