@@ -1,5 +1,4 @@
 <?php
-
 namespace Amulen\PaymentBundle\Service\Paypal;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -62,9 +61,9 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
         $this->logger = $logger;
         $this->settings = $settingRepository;
         $this->apiContext = new ApiContext(
-                new OAuthTokenCredential(
-                $this->settings->get(Setting::CLIENT_ID), $this->settings->get(Setting::CLIENT_SECRET)
-                )
+            new OAuthTokenCredential(
+            $this->settings->get(Setting::CLIENT_ID), $this->settings->get(Setting::CLIENT_SECRET)
+            )
         );
         $apiConfig = array();
         if ($this->settings->get(Setting::ENVIRONMENT_SANDBOX)) {
@@ -84,18 +83,19 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
 
             $payerInfo = new PayerInfo();
             $payerInfo->setEmail($paymentInfo->getCustomerMail());
+            $payerInfo->setCountryCode('AR');
+
             $payer = new Payer();
             $payer->setPaymentMethod("paypal");
-            $payer->setPayerInfo($payerInfo);
 
             $items = array();
             foreach ($paymentInfo->getPaymentInfoItems() as $currentItem) {
                 $item = new Item();
                 $item->setName($currentItem->getDescription())
-                        ->setCurrency('USD')
-                        ->setQuantity($currentItem->getQuantity())
-                        ->setSku($paymentInfo->getOrderId())
-                        ->setPrice($currentItem->getUnitPrice());
+                    ->setCurrency('USD')
+                    ->setQuantity($currentItem->getQuantity())
+                    ->setSku($paymentInfo->getOrderId())
+                    ->setPrice($currentItem->getUnitPrice());
                 array_push($items, $item);
             }
 
@@ -105,27 +105,27 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
 
             $amount = new Amount();
             $amount->setCurrency("USD")
-                    ->setTotal($paymentInfo->getUnitPrice());
+                ->setTotal($paymentInfo->getUnitPrice());
 
             $paymentOptions = new PaymentOptions();
             $paymentOptions->setAllowedPaymentMethod("IMMEDIATE_PAY");
             $transaction = new Transaction();
             $transaction->setAmount($amount)
-                    ->setItemList($itemList)
-                    ->setDescription($paymentInfo->getDescription())
-                    ->setPaymentOptions($paymentOptions)
-                    ->setNotifyUrl($this->container->getParameter('back_url_payment_notify'))
-                    ->setCustom($paymentInfo->getCustomerId());
+                ->setItemList($itemList)
+                ->setDescription($paymentInfo->getDescription())
+                ->setPaymentOptions($paymentOptions)
+                ->setNotifyUrl($this->container->getParameter('back_url_payment_notify'))
+                ->setCustom($paymentInfo->getCustomerId());
 
             $redirectUrls = new RedirectUrls();
             $redirectUrls->setReturnUrl($this->container->getParameter('front_url_payment_success', [], Router::ABSOLUTE_URL))
-                    ->setCancelUrl($this->container->getParameter('front_url_payment_error', [], Router::ABSOLUTE_URL));
+                ->setCancelUrl($this->container->getParameter('front_url_payment_error', [], Router::ABSOLUTE_URL));
             $payment = new Payment();
             $payment->setIntent("sale")
-                    ->setPayer($payer)
-                    ->setRedirectUrls($redirectUrls)
-                    ->setTransactions(array($transaction))
-                    ->setExperienceProfileId($experiencedProfile->getId());
+                ->setPayer($payer)
+                ->setRedirectUrls($redirectUrls)
+                ->setTransactions(array($transaction))
+                ->setExperienceProfileId($experiencedProfile->getId());
             $payment->create($this->apiContext);
             $approvalUrl = $payment->getApprovalLink();
             return $approvalUrl;
@@ -159,23 +159,19 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
         $flowConfig->setLandingPageType("Billing");
         $presentation = new Presentation();
         $presentation->setBrandName($paymentInfo->getBrandName())
-                ->setLogoImage($paymentInfo->getBrandLogo());
+            ->setLogoImage($paymentInfo->getBrandLogo());
 
-        if ($paymentInfo->getCountryCode() && in_array($paymentInfo->getCountryCode(), $this->validCountryCodes)) {
-            $presentation->setLocaleCode($paymentInfo->getCountryCode());
-        } else {
-            $presentation->setLocaleCode('AR');
-        }
+        $presentation->setLocaleCode('US');
 
         $inputFields = new InputFields();
         $inputFields->setAllowNote(false)
-                ->setNoShipping(1);
+            ->setNoShipping(1);
         $newWebProfile = new \PayPal\Api\WebProfile();
         $newWebProfile->setName('Profile ' . $paymentInfo->getBrandName() . strtotime('now'))
-                ->setPresentation($presentation)
-                ->setFlowConfig($flowConfig)
-                ->setInputFields($inputFields)
-                ->setTemporary(true);
+            ->setPresentation($presentation)
+            ->setFlowConfig($flowConfig)
+            ->setInputFields($inputFields)
+            ->setTemporary(true);
         $webProfile = $newWebProfile->create($this->apiContext);
         return $webProfile;
     }
@@ -184,5 +180,4 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
     {
         
     }
-
 }
