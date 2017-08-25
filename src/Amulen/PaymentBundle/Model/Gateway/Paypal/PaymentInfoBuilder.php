@@ -45,6 +45,8 @@ class PaymentInfoBuilder implements PaymentInfoBuilderInterface
         $paymentInfo->setPaymentId($order->getPaymentId());
         $paymentInfo->setPayerId($order->getPayerId());
         $paymentInfo->setCountryCode($order->getCountryCode());
+        $paymentInfo->setReturnUrl($order->getReturnUrl());
+        $paymentInfo->setCancelUrl($order->getCancelUrl());
         $paymentInfoItem = new PaymentInfoItem();
         $paymentInfoItem->setCurrencyId('USD');
         $paymentInfoItem->setQuantity(1);

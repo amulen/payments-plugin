@@ -1,5 +1,4 @@
 <?php
-
 namespace Amulen\PaymentBundle\Model\Payment;
 
 /**
@@ -16,6 +15,8 @@ class PaymentOrder implements PaymentOrderInterface
     private $paymentId;
     private $payerId;
     private $countryCode;
+    private $returnUrl;
+    private $cancelUrl;
 
     function getId()
     {
@@ -97,4 +98,23 @@ class PaymentOrder implements PaymentOrderInterface
         $this->countryCode = $countryCode;
     }
 
+    public function getReturnUrl()
+    {
+        return $this->returnUrl;
+    }
+
+    public function getCancelUrl()
+    {
+        return $this->cancelUrl;
+    }
+
+    public function setReturnUrl($returnUrl)
+    {
+        $this->returnUrl = $returnUrl;
+    }
+
+    public function setCancelUrl($cancelUrl)
+    {
+        $this->cancelUrl = $cancelUrl;
+    }
 }

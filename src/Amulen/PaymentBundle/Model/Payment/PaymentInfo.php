@@ -1,5 +1,4 @@
 <?php
-
 namespace Amulen\PaymentBundle\Model\Payment;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -28,6 +27,8 @@ class PaymentInfo
     private $paymentId;
     private $payerId;
     private $countryCode;
+    private $returnUrl;
+    private $cancelUrl;
 
     public function __construct()
     {
@@ -272,4 +273,23 @@ class PaymentInfo
         $this->countryCode = $countryCode;
     }
 
+    public function getReturnUrl()
+    {
+        return $this->returnUrl;
+    }
+
+    public function getCancelUrl()
+    {
+        return $this->cancelUrl;
+    }
+
+    public function setReturnUrl($returnUrl)
+    {
+        $this->returnUrl = $returnUrl;
+    }
+
+    public function setCancelUrl($cancelUrl)
+    {
+        $this->cancelUrl = $cancelUrl;
+    }
 }

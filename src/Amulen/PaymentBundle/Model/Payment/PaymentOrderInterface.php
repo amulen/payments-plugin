@@ -20,4 +20,8 @@ interface PaymentOrderInterface
     public function getPayerId();
 
     public function getCountryCode();
+    
+    public function getReturnUrl();
+    
+    public function getCancelUrl();
 }

@@ -118,8 +118,8 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
                 ->setCustom($paymentInfo->getCustomerId());
 
             $redirectUrls = new RedirectUrls();
-            $redirectUrls->setReturnUrl($this->container->getParameter('front_url_payment_success', [], Router::ABSOLUTE_URL))
-                ->setCancelUrl($this->container->getParameter('front_url_payment_error', [], Router::ABSOLUTE_URL));
+            $redirectUrls->setReturnUrl($paymentInfo->getReturnUrl())
+                ->setCancelUrl($paymentInfo->getCancelUrl());
             $payment = new Payment();
             $payment->setIntent("sale")
                 ->setPayer($payer)
