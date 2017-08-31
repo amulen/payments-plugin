@@ -110,12 +110,17 @@ class PaypalPaymentButtonGateway implements PaymentButtonGateway
             $paymentOptions = new PaymentOptions();
             $paymentOptions->setAllowedPaymentMethod("IMMEDIATE_PAY");
             $transaction = new Transaction();
+            $custom = array();
+            $custom['customerId'] = $paymentInfo->getCustomerId();
+            if ($paymentInfo->getDiscountCode()) {
+                $custom['discountCodeId'] = $paymentInfo->getDiscountCode();
+            }
             $transaction->setAmount($amount)
                 ->setItemList($itemList)
                 ->setDescription($paymentInfo->getDescription())
                 ->setPaymentOptions($paymentOptions)
                 ->setNotifyUrl($this->container->getParameter('back_url_payment_notify'))
-                ->setCustom($paymentInfo->getCustomerId());
+                ->setCustom(json_encode($custom));
 
             $redirectUrls = new RedirectUrls();
             $redirectUrls->setReturnUrl($paymentInfo->getReturnUrl())

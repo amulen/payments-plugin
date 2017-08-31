@@ -17,6 +17,7 @@ class PaymentOrder implements PaymentOrderInterface
     private $countryCode;
     private $returnUrl;
     private $cancelUrl;
+    private $discountCode;
 
     function getId()
     {
@@ -116,5 +117,15 @@ class PaymentOrder implements PaymentOrderInterface
     public function setCancelUrl($cancelUrl)
     {
         $this->cancelUrl = $cancelUrl;
+    }
+
+    public function getDiscountCode()
+    {
+        return $this->discountCode;
+    }
+
+    public function setDiscountCode($discountCode)
+    {
+        $this->discountCode = $discountCode;
     }
 }

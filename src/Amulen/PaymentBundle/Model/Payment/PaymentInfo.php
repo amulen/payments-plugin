@@ -29,6 +29,7 @@ class PaymentInfo
     private $countryCode;
     private $returnUrl;
     private $cancelUrl;
+    private $discountCode;
 
     public function __construct()
     {
@@ -291,5 +292,15 @@ class PaymentInfo
     public function setCancelUrl($cancelUrl)
     {
         $this->cancelUrl = $cancelUrl;
+    }
+
+    public function getDiscountCode()
+    {
+        return $this->discountCode;
+    }
+
+    public function setDiscountCode($discountCode)
+    {
+        $this->discountCode = $discountCode;
     }
 }

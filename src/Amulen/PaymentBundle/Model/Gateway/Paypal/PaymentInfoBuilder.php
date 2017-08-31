@@ -47,6 +47,7 @@ class PaymentInfoBuilder implements PaymentInfoBuilderInterface
         $paymentInfo->setCountryCode($order->getCountryCode());
         $paymentInfo->setReturnUrl($order->getReturnUrl());
         $paymentInfo->setCancelUrl($order->getCancelUrl());
+        $paymentInfo->setDiscountCode($order->getDiscountCode());
         $paymentInfoItem = new PaymentInfoItem();
         $paymentInfoItem->setCurrencyId('USD');
         $paymentInfoItem->setQuantity(1);

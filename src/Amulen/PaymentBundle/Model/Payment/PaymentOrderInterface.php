@@ -1,5 +1,4 @@
 <?php
-
 namespace Amulen\PaymentBundle\Model\Payment;
 
 interface PaymentOrderInterface
@@ -20,8 +19,10 @@ interface PaymentOrderInterface
     public function getPayerId();
 
     public function getCountryCode();
-    
+
     public function getReturnUrl();
-    
+
     public function getCancelUrl();
+
+    public function getDiscountCode();
 }
