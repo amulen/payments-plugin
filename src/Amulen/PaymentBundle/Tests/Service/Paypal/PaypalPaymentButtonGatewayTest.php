@@ -43,7 +43,6 @@ class PaypalPaymentButtonGatewayTest extends BaseTestCase {
         $this->assertEquals(1, sizeof($paymentInfo->getPaymentInfoItems()));
 
         $url = $this->paypalPaymentButtonGateway->getLinkUrl($paymentInfo);
-        var_dump($url);
         $this->assertNotNull($url);
     }
 
