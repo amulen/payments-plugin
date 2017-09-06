@@ -47,6 +47,14 @@ services:
           - "@service_container"
           - "@logger"
           - "@amulen.dashboard.service.setting"
+       
+    amulen_payment.gateway.subscription.button.paypal:
+        class: Amulen\PaymentBundle\Service\Paypal\PaypalSubscriptionButtonGateway
+        arguments:
+          - "@router"
+          - "@service_container"
+          - "@logger"
+          - "@amulen.dashboard.service.setting"
           
     #Factory
     amulen_payment.payment.info.builder.factory:
@@ -58,6 +66,7 @@ services:
         class: Amulen\PaymentBundle\Model\Factory\PaymentButtonGatewayFactory
         arguments:
           - "@service_container"
+          
 
     #Builder
     amulen_payment.builder.mp:
@@ -68,6 +77,9 @@ services:
    
     amulen_payment.builder.paypal:
         class: Amulen\PaymentBundle\Model\Gateway\Paypal\PaymentInfoBuilder
+    
+    amulen_payment.subscription.builder.paypal:
+        class: Amulen\PaymentBundle\Model\Gateway\Paypal\SubscriptionInfoBuilder
         
     amulen_payment.paypal.service:
         class: Amulen\PaymentBundle\Service\Paypal\PaypalService

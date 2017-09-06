@@ -7,6 +7,17 @@ class PaypalPlan
     private $name;
     private $description;
     private $payments;
+    private $paypalId;
+
+    public function getPaypalId()
+    {
+        return $this->paypalId;
+    }
+
+    public function setPaypalId($paypalId)
+    {
+        $this->paypalId = $paypalId;
+    }
 
     public function getName()
     {

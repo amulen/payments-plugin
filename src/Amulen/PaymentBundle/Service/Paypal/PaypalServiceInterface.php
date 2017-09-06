@@ -9,4 +9,5 @@ interface PaypalServiceInterface
     function verifyNotification($data);
 
     function createPlan(PaypalPlan $paypalPlan);
+
 }
