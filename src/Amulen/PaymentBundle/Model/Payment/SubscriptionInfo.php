@@ -11,7 +11,6 @@ class SubscriptionInfo
     private $planId;
     private $returnUrl;
     private $cancelUrl;
-    private $notifyUrl;
 
     public function getName()
     {
@@ -53,11 +52,6 @@ class SubscriptionInfo
         return $this->cancelUrl;
     }
 
-    public function getNotifyUrl()
-    {
-        return $this->notifyUrl;
-    }
-
     public function setReturnUrl($returnUrl)
     {
         $this->returnUrl = $returnUrl;
@@ -68,8 +62,4 @@ class SubscriptionInfo
         $this->cancelUrl = $cancelUrl;
     }
 
-    public function setNotifyUrl($notifyUrl)
-    {
-        $this->notifyUrl = $notifyUrl;
-    }
 }

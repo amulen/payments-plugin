@@ -25,7 +25,6 @@ class PaypalSubscriptionButtonGatewayTest extends BaseTestCase
         $subscriptionOrder->setDescription('A description');
         $subscriptionOrder->setPlanId("P-33E819573F995234CLASII6A");
         $urlSarasa = 'https://devapi.cloudlance.co/api/amulen_payment/notification/paypalGato';
-        $subscriptionOrder->setNotifyUrl($urlSarasa);
         $subscriptionOrder->setReturnUrl($urlSarasa);
         $subscriptionOrder->setCancelUrl($urlSarasa);
         $user = $this->getMockBuilder(UserInterface::class)
@@ -72,7 +71,7 @@ class PaypalSubscriptionButtonGatewayTest extends BaseTestCase
     public function testConfirm_withTokenOk_confirmSubscription()
     {
         $subscriptionOrder = new SubscriptionOrder();
-        $token = "EC-84H58178M0050241H";
+        $token = "EC-3KX921065E369583U";
         $this->paypalSubscriptionButtonGateway->confirmSubscription($token);
     }
 }

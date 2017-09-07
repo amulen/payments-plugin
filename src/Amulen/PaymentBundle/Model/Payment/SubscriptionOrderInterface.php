@@ -14,5 +14,4 @@ interface SubscriptionOrderInterface
 
     public function getCancelUrl();
 
-    public function getNotifyUrl();
 }

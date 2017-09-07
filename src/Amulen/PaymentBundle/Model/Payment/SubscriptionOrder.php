@@ -12,7 +12,6 @@ class SubscriptionOrder implements SubscriptionOrderInterface
     private $planId;
     private $returnUrl;
     private $cancelUrl;
-    private $notifyUrl;
 
     public function getName()
     {
@@ -54,11 +53,6 @@ class SubscriptionOrder implements SubscriptionOrderInterface
         return $this->cancelUrl;
     }
 
-    public function getNotifyUrl()
-    {
-        return $this->notifyUrl;
-    }
-
     public function setReturnUrl($returnUrl)
     {
         $this->returnUrl = $returnUrl;
@@ -67,10 +61,5 @@ class SubscriptionOrder implements SubscriptionOrderInterface
     public function setCancelUrl($cancelUrl)
     {
         $this->cancelUrl = $cancelUrl;
-    }
-
-    public function setNotifyUrl($notifyUrl)
-    {
-        $this->notifyUrl = $notifyUrl;
     }
 }

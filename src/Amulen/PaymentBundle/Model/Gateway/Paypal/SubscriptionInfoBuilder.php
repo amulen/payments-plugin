@@ -19,7 +19,6 @@ class SubscriptionInfoBuilder implements SubscriptionInfoBuilderInterface
         $subscriptionInfo->setPlanId($order->getPlanId());
         $subscriptionInfo->setReturnUrl($order->getReturnUrl());
         $subscriptionInfo->setCancelUrl($order->getCancelUrl());
-        $subscriptionInfo->setNotifyUrl($order->getNotifyUrl());
         return $subscriptionInfo;
     }
 }

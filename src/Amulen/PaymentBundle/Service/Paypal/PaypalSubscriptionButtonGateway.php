@@ -67,7 +67,7 @@ class PaypalSubscriptionButtonGateway implements SubscriptionButtonGateway
     public function getLinkUrl(SubscriptionInfo $subscriptionInfo)
     {
         $startDate = new \DateTime('now', new \Datetimezone('UTC'));
-        $startDate->modify('+1 day');
+        $startDate->modify('+1 hour');
         try {
             $agreement = new Agreement();
             $agreement->setName($subscriptionInfo->getName())
@@ -84,7 +84,6 @@ class PaypalSubscriptionButtonGateway implements SubscriptionButtonGateway
             $merchantPreferences = new \PayPal\Api\MerchantPreferences();
             $merchantPreferences->setReturnUrl($subscriptionInfo->getReturnUrl());
             $merchantPreferences->setCancelUrl($subscriptionInfo->getCancelUrl());
-            //$merchantPreferences->setNotifyUrl($subscriptionInfo->getNotifyUrl());
             $agreement->setOverrideMerchantPreferences($merchantPreferences);
             $agreement = $agreement->create($this->apiContext);
             return $agreement->getApprovalLink();
@@ -101,7 +100,8 @@ class PaypalSubscriptionButtonGateway implements SubscriptionButtonGateway
         if ($token != null) {
             try {
                 $agreement = new Agreement();
-                $agreement->execute($token, $this->apiContext);
+                $agreement = $agreement->execute($token, $this->apiContext);
+                var_dump($agreement);
                 return $agreement->getId();
             } catch (\PayPal\Exception\PayPalConnectionException $ex) {
                 throw new \InvalidArgumentException('payment:confirm:invalid');
