@@ -100,9 +100,7 @@ class PaypalSubscriptionButtonGateway implements SubscriptionButtonGateway
         if ($token != null) {
             try {
                 $agreement = new Agreement();
-                $agreement = $agreement->execute($token, $this->apiContext);
-                var_dump($agreement);
-                return $agreement->getId();
+                return $agreement->execute($token, $this->apiContext);
             } catch (\PayPal\Exception\PayPalConnectionException $ex) {
                 throw new \InvalidArgumentException('payment:confirm:invalid');
             }

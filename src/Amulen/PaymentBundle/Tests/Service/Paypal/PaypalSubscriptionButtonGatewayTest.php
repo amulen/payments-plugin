@@ -66,12 +66,12 @@ class PaypalSubscriptionButtonGatewayTest extends BaseTestCase
         $this->setExpectedException(\InvalidArgumentException::class);
         $this->paypalSubscriptionButtonGateway->getLinkUrl($subscriptionInfo);
     }
-    
-    
+
     public function testConfirm_withTokenOk_confirmSubscription()
     {
         $subscriptionOrder = new SubscriptionOrder();
         $token = "EC-3KX921065E369583U";
-        $this->paypalSubscriptionButtonGateway->confirmSubscription($token);
+        $subscription = $this->paypalSubscriptionButtonGateway->confirmSubscription($token);
+        $this->assertNotNull($subscription);
     }
 }
