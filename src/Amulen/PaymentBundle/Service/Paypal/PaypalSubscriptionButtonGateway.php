@@ -88,7 +88,7 @@ class PaypalSubscriptionButtonGateway implements SubscriptionButtonGateway
             $agreement = $agreement->create($this->apiContext);
             return $agreement->getApprovalLink();
         } catch (\PayPal\Exception\PayPalConnectionException $ex) {
-            var_dump($ex->getData());
+          //  var_dump($ex->getData());
             throw new \InvalidArgumentException('subscription:plan:invalid');
         } catch (\Exception $ex) {
             throw new \InvalidArgumentException('subscription:plan:invalid');
