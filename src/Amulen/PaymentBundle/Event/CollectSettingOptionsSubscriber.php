@@ -71,5 +71,10 @@ class CollectSettingOptionsSubscriber implements EventSubscriberInterface
             "key" => \Amulen\PaymentBundle\Model\Gateway\Mp\Setting::KEY_ENVIRONMENT,
             "label" => $this->translator->trans('MP - Environment. Sandbox boolean'),
         ]);
+
+        $event->addSettingOption([
+            "key" => \Amulen\PaymentBundle\Model\Gateway\Mp\Setting::KEY_EXCLUDED_PAYMENT_TYPES,
+            "label" => $this->translator->trans('MP - Excluded payment types. ("ticket", "atm", "credit_card", "debit_card", "prepaid_card")'),
+        ]);
     }
 }

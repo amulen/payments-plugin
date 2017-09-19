@@ -68,6 +68,7 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
      */
     public function getLinkUrl($paymentInfo)
     {
+        $excluded = $this->excludedPaymentTypes();
         $items = $this->itemsToArray($paymentInfo->getPaymentInfoItems());
         $preference_data = array(
             "id" => $paymentInfo->getOrderId(),
@@ -83,6 +84,9 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
             "notification_url" => $this->router->generate('amulen_payment_async_notification', ['gatewayId' => Setting::GATEWAY_ID], Router::ABSOLUTE_URL),
             "payer" => array(
                 "email" => $paymentInfo->getCustomerMail()
+            ),
+            "payment_methods" => array(
+                "excluded_payment_types" => $excluded
             )
         );
         try {
@@ -174,6 +178,19 @@ class MpPaymentButtonGateway implements PaymentButtonGateway
             $element['quantity'] = $item->getQuantity() ? $item->getQuantity() : null;
             $element['currency_id'] = $item->getCurrencyId() ? $item->getCurrencyId() : null;
             array_push($response, $element);
+        }
+        return $response;
+    }
+
+    private function excludedPaymentTypes()
+    {
+        $excludedTypes = $this->settings->getByKey(Setting::KEY_EXCLUDED_PAYMENT_TYPES);
+        $response = [];
+        if($excludedTypes){
+            foreach ($excludedTypes as $item) {
+                $element['id'] = $item;
+                array_push($response, $element);
+            }
         }
         return $response;
     }
